@@ -3,182 +3,153 @@ package foundation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.JFrame;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.geom.Ellipse2D;
-import java.util.ArrayList;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+import java.util.Timer;
+import java.util.TimerTask;
 
 class GenealogyView extends JPanel
 {
-    private static final int DEFAULT_CIRCLE_DIAMETER = 70;
-    private static final int DEFAULT_CIRCLE_RADIUS = DEFAULT_CIRCLE_DIAMETER / 2;
-    private int offsetX;
-    private int offsetY;
-    private double scaleOriginX;
-    private double scaleOriginY;
-    private double scaleFactor = 1;
-    private final @NotNull ArrayList<Node> nodes = new ArrayList<>();
-    private final @NotNull ArrayList<Bond> bonds = new ArrayList<>();
+    private static final int DEFAULT_WIDTH = 1200;
+    private static final int DEFAULT_HEIGHT = 800;
+    public static final int DEFAULT_CIRCLE_DIAMETER = 50;
+    public static final int DEFAULT_CIRCLE_RADIUS = DEFAULT_CIRCLE_DIAMETER / 2;
+    private static final @NotNull Color BACKGROUND_COLOR = new Color(153, 217, 234);
+    private final @NotNull IncrementTask increment = new IncrementTask();
+    private final @NotNull Timer animationTimer = new Timer(true);
+    private final @NotNull GenealogyModel model = new GenealogyModel();
+    private final @NotNull ProfileFrame profileFrame = new ProfileFrame(this);
+    private final @NotNull Camera camera;
 
     GenealogyView()
     {
-        this.setBackground(Color.GRAY);
+        this.camera = new Camera(this);
+        this.setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        this.setBackground(BACKGROUND_COLOR);
+        // Register listeners
+        final @NotNull CanvasMouseListener mouseListener = new CanvasMouseListener();
+        addMouseListener( mouseListener );
+        addMouseMotionListener( mouseListener );
+        addMouseWheelListener( new CanvasMouseWheelListener() );
+        // Schedule animation timer
+        animationTimer.schedule(increment, 0, 50);
     }
 
-    public void moveCanvas(final int offsetX, final int offsetY)
-    {
-        this.offsetX += offsetX;
-        this.offsetY += offsetY;
-        repaint();
-    }
 
-    private void moveCanvasToPoint(final int abscissa, final int ordinate)
+    /*
+        Constructs and shows at (x, y) the "Add Person"/"Remove Person" popup menu.
+     */
+    private void showNodePopupMenu(final int x, final int y)
     {
-        this.offsetX = abscissa;
-        this.offsetY = ordinate;
-    }
-
-    public void scaleCanvas(final double scaleFactor, final int x0, final int y0)
-    {
-        final double minScaleFactor = 0.5;
-        final double maxScaleFactor = 5;
-        //
-        this.scaleFactor *= scaleFactor;
-        if (this.scaleFactor < minScaleFactor)
+        final String label;
+        final @NotNull ActionListener action;
+        final @Nullable Node nodeUnderCursor = detectNode(x, y);
+        if ( nodeUnderCursor != null )
         {
-            this.scaleFactor = minScaleFactor;
+            label = "Remove Person";
+            action = new RemovePersonPopupListener(nodeUnderCursor);
         }
-        else if (this.scaleFactor > maxScaleFactor)
+        else
         {
-            this.scaleFactor = maxScaleFactor;
+            label = "Add Person";
+            action = new AddPersonPopupListener(x, y);
         }
-        // moveCanvasToPoint(projectX(x0), projectY(y0));
-        this.scaleOriginX = inverseProjectX(x0);
-        this.scaleOriginY = inverseProjectY(y0);
-        //
-        repaint();
+        // Create menu item and add action listener to it
+        final @NotNull JMenuItem jmiAction = new JMenuItem(label);
+        jmiAction.addActionListener(action);
+        // Create and show the popup menu
+        final @NotNull JPopupMenu popupMenu = new JPopupMenu();
+        popupMenu.add(jmiAction);
+        popupMenu.show(this, x, y);
     }
 
-    public void dropBond(final @NotNull Node a, final @NotNull Node b)
+    /*
+        Cancels animation timer.
+     */
+    public void stopAnimation()
     {
-        // Remove if a bond consists of nodes `a` and `b`
-        bonds.removeIf( bond ->
-                (bond.getFirstNode().equals(a) || bond.getFirstNode().equals(b))
-                        && (bond.getSecondNode().equals(a) || bond.getSecondNode().equals(b))
-        );
+        animationTimer.cancel();
     }
 
-    public void addBond(final int first_node_id, final int second_node_id, final boolean marital)
+    /*
+        Constructs and shows at (x, y) the bond popup menu between `head` and `tail`.
+     */
+    private void showBondPopupMenu(final @NotNull Node head, final @NotNull Node tail, final int x, final int y)
     {
-        @Nullable Node firstNode = null;
-        @Nullable Node secondNode = null;
-        for (Node node : nodes)
+        final @NotNull JPopupMenu popupMenu = new JPopupMenu();
+        final boolean isParentOrChild = model.isParentOrChild(head, tail);
+        final boolean areMarried = model.areMarried(head, tail);
+        final boolean canMarry = model.isNotMarried(head)
+                && model.isNotMarried(tail)
+                && !isParentOrChild;
+        if ( canMarry )
         {
-            if (node.getId() == first_node_id)
+            final @NotNull JMenuItem jmiMarry = new JMenuItem("Marry To...");
+            jmiMarry.addActionListener(new MarryToPopupListener(head, tail));
+            popupMenu.add(jmiMarry);
+        }
+        else
+        {
+            if ( areMarried )
             {
-                firstNode = node;
-            }
-            else if (node.getId() == second_node_id)
-            {
-                secondNode = node;
+                final @NotNull JMenuItem jmiDivorce = new JMenuItem("Divorce");
+                jmiDivorce.addActionListener( new DivorcePopupListener(head, tail) );
+                popupMenu.add(jmiDivorce);
             }
         }
         //
-        if ((firstNode == null) || (secondNode == null))
+        final boolean canParent = !isParentOrChild && !areMarried;
+        if ( canParent )
         {
-            System.out.println("Fatal Error! Cannot find nodes to bond, exiting...");
-            System.exit(1);
+            final @NotNull JMenuItem jmiSetParent = new JMenuItem("Create Parent -> Child Bond");
+            final @NotNull JMenuItem jmiSetChild = new JMenuItem("Create Child -> Parent Bond");
+            jmiSetParent.addActionListener(new BegetPopupListener(head, tail));
+            jmiSetChild.addActionListener(new BegetPopupListener(tail, head));
+            popupMenu.add(jmiSetChild);
+            popupMenu.add(jmiSetParent);
         }
-        final @NotNull Color color = (marital)? Color.ORANGE : secondNode.getBorderColor();
-        bonds.add( new Bond(firstNode, secondNode, color) );
+        else
+        {
+            if ( isParentOrChild )
+            {
+                final @NotNull JMenuItem jmiDropParent = new JMenuItem("Remove Parentship");
+                jmiDropParent.addActionListener(new RemoveParentshipListener(head, tail));
+                popupMenu.add(jmiDropParent);
+            }
+        }
+        // Show popup menu
+        popupMenu.show(this, x, y);
     }
 
-    public void addNode(final @NotNull Node node)
-    {
-        nodes.add(node);
-    }
-
-    public void dropNode(final int photoId)
-    {
-        nodes.removeIf( p -> (p.getId() == photoId) );
-    }
-
-    private double inverseProjectX(final double x)
-    {
-        return ( x - offsetX - this.scaleOriginX * (1 - this.scaleFactor) ) / this.scaleFactor;
-    }
-
-    private double inverseProjectY(final double y)
-    {
-        return ( y - offsetY - this.scaleOriginY * (1 - this.scaleFactor) ) / this.scaleFactor;
-    }
-
-    private int projectX(final double x)
-    {
-        return (int) Math.ceil( this.scaleFactor * x + this.scaleOriginX * (1 - this.scaleFactor) + offsetX );
-    }
-
-    private int projectY(final double y)
-    {
-        return (int) Math.ceil( this.scaleFactor * y + this.scaleOriginY * (1 - this.scaleFactor) + offsetY );
-    }
-
-    private int scale(final double length)
-    {
-        return (int) Math.ceil( this.scaleFactor * length );
-    }
-
-    private void drawNode(final @NotNull Graphics2D g2d, final @NotNull Node node)
-    {
-        g2d.setClip(
-                new Ellipse2D.Float(projectX(node.getX()),
-                projectY(node.getY()),
-                scale(DEFAULT_CIRCLE_DIAMETER),
-                scale(DEFAULT_CIRCLE_DIAMETER))
-        );
-        g2d.drawImage(
-                node.getPhoto(),
-                projectX(node.getX()),
-                projectY(node.getY()),
-                scale(DEFAULT_CIRCLE_DIAMETER),
-                scale(DEFAULT_CIRCLE_DIAMETER),
-                null
-        );
-        // Remove the clip from the graphics
-        g2d.setClip(null);
-        // Draw a circled border around the photo
-        final @NotNull Color borderColor = (node.isSelected())? Color.RED : node.getBorderColor();
-        g2d.setColor(borderColor);
-        g2d.drawOval(
-                projectX(node.getX()),
-                projectY(node.getY()),
-                scale(DEFAULT_CIRCLE_DIAMETER),
-                scale(DEFAULT_CIRCLE_DIAMETER)
-        );
-    }
-
-    private void drawBond(final @NotNull Graphics2D g2d, final @NotNull Bond bond)
-    {
-        g2d.setColor(bond.getColor());
-
-        final int x0 = bond.getFirstNode().getX() + scale(DEFAULT_CIRCLE_RADIUS);
-        final int y0 = bond.getFirstNode().getY() + scale(DEFAULT_CIRCLE_RADIUS);
-        final int x1 = bond.getSecondNode().getX() + scale(DEFAULT_CIRCLE_RADIUS);
-        final int y1 = bond.getSecondNode().getY() + scale(DEFAULT_CIRCLE_RADIUS);
-        g2d.drawLine(projectX(x0), projectY(y0), projectX(x1), projectY(y1));
-    }
-
-    public @Nullable Node detectNode(final int x, final int y)
+    /*
+        Returns the node which contains the (cursorAbs, cursorOrd) point.
+     */
+    private @Nullable Node detectNode(final int cursorAbs, final int cursorOrd)
     {
         @Nullable Node resultNode = null;
-        for (Node node : nodes)
+        for (Node node : model.getNodes())
         {
-            final int x0 = node.getX() + scale(DEFAULT_CIRCLE_RADIUS);
-            final int y0 = node.getY() + scale(DEFAULT_CIRCLE_RADIUS);
-            if (d(x, y, projectX(x0), projectY(y0)) <= scale(DEFAULT_CIRCLE_RADIUS))
+            final double distanceBetweenPoints = camera.d(
+                    camera.toRealX(cursorAbs),
+                    camera.toRealY(cursorOrd),
+                    node.getX() + DEFAULT_CIRCLE_RADIUS,
+                    node.getY() + DEFAULT_CIRCLE_RADIUS
+            );
+            if ( distanceBetweenPoints <= DEFAULT_CIRCLE_RADIUS )
             {
                 resultNode = node;
                 break;
@@ -187,38 +158,428 @@ class GenealogyView extends JPanel
         return resultNode;
     }
 
-    public void moveNode(final @NotNull Node node, final int offsetX, final int offsetY)
-    {
-        node.setX(node.getX() + offsetX);
-        node.setY(node.getY() + offsetY);
-        repaint();
-    }
-
-    /*
-        Calculated a Euclidean distance between two points (scaleOriginX, scaleOriginY) and (x1, y1).
-     */
-    private double d(final int x0, final int y0, final int x1, final int y1)
-    {
-        return Math.sqrt( (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0) );
-    }
-
     @Override
     protected void paintComponent(Graphics g)
     {
         super.paintComponent(g);
         final @NotNull Graphics2D g2d = (Graphics2D)g;
-        // Enable AntiAliasing
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setBackground(BACKGROUND_COLOR);
+        // Set antialiasing options for shapes
+        final @NotNull Object shapeAntialiasing;
+        if ( MainFrame.graphicsOptions.get(MainFrame.SHAPE_ANTIALIASING) )
+        {
+            shapeAntialiasing = RenderingHints.VALUE_ANTIALIAS_ON;
+        }
+        else
+        {
+            shapeAntialiasing = RenderingHints.VALUE_ANTIALIAS_OFF;
+        }
+        // Set antialiasing options for text
+        final @NotNull Object textAntialiasing;
+        if ( MainFrame.graphicsOptions.get(MainFrame.TEXT_ANTIALIASING) )
+        {
+            textAntialiasing = RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB;
+        }
+        else
+        {
+            textAntialiasing = RenderingHints.VALUE_TEXT_ANTIALIAS_OFF;
+        }
+        // Set the options
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, shapeAntialiasing);
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, textAntialiasing);
         // Paint all nodes and bonds between them
-        bonds.forEach(bond -> drawBond(g2d, bond));
-        nodes.forEach(node -> drawNode(g2d, node));
-        //
-        // g2d.setColor(Color.BLUE);
-        // g2d.fillRect( projectX(100), projectY(100), scale(20), scale(20) );
-        // g2d.fill(new Ellipse2D.Double( projectX(300), projectY(300), scale(30), scale(30) ));
-        // g2d.drawLine(projectX(0), projectY(getHeight() / 2), projectX(getWidth()), projectY(getHeight() / 2));
-        // g2d.drawLine(projectX(getWidth() / 2), projectY(0), projectX(getWidth() / 2), projectY(getHeight()));
-        // g2d.setColor(Color.RED);
-        // g2d.fillRect( this.scaleOriginX, this.scaleOriginY, 6, 6 );
+        model.getBonds().forEach(bond -> bond.draw(this, g2d));
+        model.getNodes().forEach(node -> node.draw(this, g2d));
+    }
+
+    public @NotNull JFrame getParentFrame()
+    {
+        return (JFrame)SwingUtilities.getWindowAncestor(this);
+    }
+
+    public int getAnimationCount()
+    {
+        return increment.getAnimationCount();
+    }
+
+    public @NotNull Camera getCamera()
+    {
+        return camera;
+    }
+
+    public @NotNull GenealogyModel getModel()
+    {
+        return model;
+    }
+
+
+
+    private class CanvasMouseListener extends MouseAdapter
+    {
+        final static int LEFT_BUTTON = 1;
+        final static int MIDDLE_BUTTON = 2;
+        final static int RIGHT_BUTTON = 3;
+        private int lastRelativeX;  // Stores the X coordinate of the last position of the dragged mouse
+        private int lastRelativeY;  // Stores the Y coordinate of the last position of the dragged mouse
+        private @Nullable Node lastPressedNode; // Stores the last node on which the user pressed the mouse button
+        private @Nullable Node lastSelectedNode; // Stores the last node the user selected (clicked once)
+
+        @Override
+        public void mouseClicked(MouseEvent e)
+        {
+            super.mouseClicked(e);
+            // Only left button clicks are allowed
+            if ( e.getButton() != LEFT_BUTTON )
+            {
+                return;
+            }
+            // Only single and double left clicks are supported
+            final int clickCount = e.getClickCount();
+            if ( clickCount == 1 )
+            {
+                if ( lastPressedNode == null )
+                {
+                    if ( lastSelectedNode != null )
+                    {
+                        // User wants to clear last selected node
+                        lastSelectedNode.deselect();
+                        lastSelectedNode = null;
+                    }
+                }
+                else
+                {
+                    if ( lastSelectedNode == null )
+                    {
+                        // User wants to select the first node
+                        lastSelectedNode = lastPressedNode;
+                        lastSelectedNode.select();
+                    }
+                    else
+                    {
+                        // User already selected a node and now selects another node
+                        // or deselect the last selected node
+                        if ( !lastSelectedNode.equals(lastPressedNode) )
+                        {
+                            lastSelectedNode.deselect();
+                            lastPressedNode.select();
+                            lastSelectedNode = lastPressedNode;
+                        }
+                        else
+                        {
+                            lastSelectedNode.deselect();
+                            lastSelectedNode = null;
+                        }
+                    }
+                }
+            }
+            else if ( clickCount == 2 )
+            {
+                if ( lastSelectedNode != null )
+                {
+                    lastSelectedNode.deselect();
+                }
+                lastSelectedNode = null;
+                //
+                if ( lastPressedNode == null )
+                {
+                    // User double-clicked on empty place, so he wants to create a new node here
+                    profileFrame.createNewProfile(camera.toRealX(e.getX()), camera.toRealY(e.getY()));
+                }
+                else
+                {
+                    // User double-clicked on a node, so he wants to see its profile
+                    profileFrame.updateProfile(lastPressedNode);
+                }
+            }
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e)
+        {
+            super.mousePressed(e);
+            //
+            if ( (e.getButton() == RIGHT_BUTTON) )
+            {
+                lastPressedNode = detectNode(e.getX(), e.getY());
+                //
+                if (e.isPopupTrigger())
+                {
+                    final boolean bondMenuTriggered = (lastSelectedNode != null)
+                            && (lastPressedNode != null)
+                            && !(lastPressedNode.equals(lastSelectedNode));
+                    if (bondMenuTriggered)
+                    {
+                        showBondPopupMenu(lastSelectedNode, lastPressedNode, e.getX(), e.getY());
+                    }
+                    else
+                    {
+                        showNodePopupMenu( e.getX(), e.getY() );
+                    }
+                }
+            }
+            else if ( e.getButton() == LEFT_BUTTON )
+            {
+                lastPressedNode = detectNode(e.getX(), e.getY());
+            }
+            //
+            saveCurrentMousePosition(e.getX(), e.getY());
+        }
+
+        @Override
+        public void mouseDragged(MouseEvent e)
+        {
+            super.mouseDragged(e);
+            //
+            final int buttonId = e.getButton();
+            if (buttonId == LEFT_BUTTON)
+            {
+                if (lastPressedNode != null)
+                {
+                    final double offsetX = camera.toRealX(e.getX()) - camera.toRealX(lastRelativeX);
+                    final double offsetY = camera.toRealY(e.getY()) - camera.toRealY(lastRelativeY);
+                    lastPressedNode.move(offsetX, offsetY);
+                    repaint();
+                }
+            }
+            else if (buttonId == MIDDLE_BUTTON)
+            {
+                camera.moveCanvas(e.getX() - lastRelativeX, e.getY() - lastRelativeY);
+            }
+            saveCurrentMousePosition(e.getX(), e.getY());
+        }
+
+        private void saveCurrentMousePosition(final int x, final int y)
+        {
+            this.lastRelativeX = x;
+            this.lastRelativeY = y;
+        }
+    }
+
+    private class CanvasMouseWheelListener implements MouseWheelListener
+    {
+        private final double oneClickScaleFactor = 1.03;
+
+        @Override
+        public void mouseWheelMoved(MouseWheelEvent e)
+        {
+            final int nClicks = e.getWheelRotation();
+            final double scaleFactor = (nClicks > 0)? 1 / oneClickScaleFactor : oneClickScaleFactor;
+            camera.scaleOnScreenPoint( scaleFactor, e.getX(), e.getY() );
+        }
+    }
+
+    private class IncrementTask extends TimerTask
+    {
+        private int animationCount = 0;
+
+        @Override
+        public void run()
+        {
+            if ( MainFrame.graphicsOptions.get(MainFrame.ANIMATION) )
+            {
+                animationCount += 1;
+                repaint();
+            }
+        }
+
+        private int getAnimationCount()
+        {
+            return animationCount;
+        }
+    }
+
+    private class AddPersonPopupListener implements ActionListener
+    {
+        private final int newNodePositionX;
+        private final int newNodePositionY;
+
+        AddPersonPopupListener(final int newNodePositionX, final int newNodePositionY)
+        {
+            this.newNodePositionX = newNodePositionX;
+            this.newNodePositionY = newNodePositionY;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            profileFrame.createNewProfile(camera.toRealX(newNodePositionX), camera.toRealY(newNodePositionY));
+        }
+    }
+
+    private class RemovePersonPopupListener implements ActionListener
+    {
+        private final @NotNull Node nodeToRemove;
+
+        RemovePersonPopupListener(final @NotNull Node nodeToRemove)
+        {
+            this.nodeToRemove = nodeToRemove;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            final String message = String.format("Do you really want to expunge %s %s and all relations to %s?",
+                    nodeToRemove.getFirstName(),
+                    nodeToRemove.getLastName(),
+                    ( nodeToRemove.isMale() )? "him" : "her"
+            );
+            final int choice = JOptionPane.showConfirmDialog(null,
+                    message,
+                    "Confirm Deletion",
+                    JOptionPane.YES_NO_OPTION
+            );
+            if (choice == JOptionPane.YES_OPTION)
+            {
+                model.removeNode(nodeToRemove);
+            }
+        }
+    }
+
+    private class MarryToPopupListener implements ActionListener
+    {
+        private final @NotNull Node firstSpouse;
+        private final @NotNull Node secondSpouse;
+
+        MarryToPopupListener(final @NotNull Node firstSpouse, final @NotNull Node secondSpouse)
+        {
+            this.firstSpouse = firstSpouse;
+            this.secondSpouse = secondSpouse;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            final String text = String.format("Do you bless the marriage between %s %s and %s %s?\n" +
+                            "If yes, then enter the date of marriage in format dd.mm.year, otherwise press cancel.",
+                    firstSpouse.getFirstName(),
+                    firstSpouse.getLastName(),
+                    secondSpouse.getFirstName(),
+                    secondSpouse.getLastName()
+            );
+            final String datePattern = "(0?[1-9]|[1-2]\\d|30|31)\\.(0?[1-9]|1[0-2])\\.[1-2]\\d\\d\\d";
+            String dateOfMarriage = "";
+            String caption = "Enter date of marriage";
+            while ( (dateOfMarriage != null) && !dateOfMarriage.matches(datePattern) )
+            {
+                dateOfMarriage = JOptionPane.showInputDialog(GenealogyView.this,
+                        text,
+                        caption,
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+                caption = "Wrong date format";
+            }
+            if ( dateOfMarriage != null )
+            {
+                model.marry(firstSpouse, secondSpouse, dateOfMarriage);
+            }
+        }
+    }
+
+    private class DivorcePopupListener implements ActionListener
+    {
+        private final @NotNull Node firstSpouse;
+        private final @NotNull Node secondSpouse;
+
+        DivorcePopupListener(final @NotNull Node firstSpouse, final @NotNull Node secondSpouse)
+        {
+            this.firstSpouse = firstSpouse;
+            this.secondSpouse = secondSpouse;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            final String message = String.format(
+                    "Do you really want to divorce %s %s and %s %s?",
+                    firstSpouse.getFirstName(),
+                    firstSpouse.getLastName(),
+                    secondSpouse.getFirstName(),
+                    secondSpouse.getLastName()
+            );
+            final int choice = JOptionPane.showConfirmDialog(GenealogyView.this,
+                    message,
+                    "Confirm Divorce",
+                    JOptionPane.YES_NO_OPTION
+            );
+            if ( choice == JOptionPane.YES_OPTION )
+            {
+               model.divorce(firstSpouse, secondSpouse);
+            }
+        }
+    }
+
+    private class BegetPopupListener implements ActionListener
+    {
+        private final @NotNull Node parent;
+        private final @NotNull Node child;
+
+        BegetPopupListener(final @NotNull Node parent, final @NotNull Node child)
+        {
+            this.parent = parent;
+            this.child = child;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            final String message = String.format("Set %s %s as a parent of %s %s?",
+                    parent.getFirstName(),
+                    parent.getLastName(),
+                    child.getFirstName(),
+                    child.getLastName()
+            );
+            final int choice = JOptionPane.showConfirmDialog(GenealogyView.this,
+                    message,
+                    "Confirm Parentship",
+                    JOptionPane.YES_NO_OPTION
+            );
+            if ( choice == JOptionPane.YES_OPTION )
+            {
+                // Add new parental bond
+                final @NotNull Bond parentalBond = new Bond(parent, child);
+                model.getBonds().add(parentalBond);
+                // Insert new parental row in the table `beget`
+                final String query = String.format(
+                        "INSERT INTO beget(parent_id, child_id) VALUES (%d, %d)",
+                        parent.getID(),
+                        child.getID()
+                );
+                Database.instance.issueStatement(query);
+            }
+        }
+    }
+
+    private class RemoveParentshipListener implements ActionListener
+    {
+        private final @NotNull Node firstNode;
+        private final @NotNull Node secondNode;
+
+        RemoveParentshipListener(final @NotNull Node firstNode, final @NotNull Node secondNode)
+        {
+            this.firstNode = firstNode;
+            this.secondNode = secondNode;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            final String message = String.format(
+                    "Do you really want to remove the parentship between %s %s and %s %s?",
+                    firstNode.getFirstName(),
+                    firstNode.getLastName(),
+                    secondNode.getFirstName(),
+                    secondNode.getLastName()
+            );
+            final int choice = JOptionPane.showConfirmDialog(
+                    GenealogyView.this,
+                    message,
+                    "Confirm Removal",
+                    JOptionPane.YES_NO_OPTION
+            );
+            if ( choice == JOptionPane.YES_OPTION )
+            {
+                model.removeParentship(firstNode, secondNode);
+            }
+        }
     }
 }
