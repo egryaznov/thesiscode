@@ -153,16 +153,12 @@ public class ProfileFrame extends JFrame
     }
 
     /*
-        Removes all quotes from the string `value` and puts it in the `map` as a (field -> value) entry
-        only if `value` is not empty after washing.
+        Removes all quotes from the string `value` and puts it in the `map` as a (field -> value) entry.
      */
-    private void putStringValueIfNotEmpty(final @NotNull Map<String, String> map, final String field, final String value)
+    private void washAndPutString(final @NotNull Map<String, String> map, final String field, final String value)
     {
-        final String preparedValue = Database.instance.wash( value );
-        if ( !preparedValue.isEmpty() )
-        {
-            map.put(field, preparedValue);
-        }
+        final String washedValue = Database.instance.wash( value );
+        map.put(field, washedValue);
     }
 
     /*
@@ -172,8 +168,8 @@ public class ProfileFrame extends JFrame
     {
         // Put a name
         final @NotNull Map<String, String> column = new HashMap<>();
-        putStringValueIfNotEmpty(column, Database.FIRST_NAME_COLUMN, firstNameEdit.getText());
-        putStringValueIfNotEmpty(column, Database.LAST_NAME_COLUMN, lastNameEdit.getText());
+        washAndPutString(column, Database.FIRST_NAME_COLUMN, firstNameEdit.getText());
+        washAndPutString(column, Database.LAST_NAME_COLUMN, lastNameEdit.getText());
         // Put a date
         final @NotNull Calendar birthDate = (Calendar)datePicker.getFormattedTextField().getValue();
         final int day = birthDate.get(Calendar.DAY_OF_MONTH);
@@ -184,9 +180,9 @@ public class ProfileFrame extends JFrame
         final String sex = ( maleCheckBox.isSelected() )? Database.MALE : Database.FEMALE;
         column.put(Database.SEX_COLUMN, sex);
         // Put other values
-        putStringValueIfNotEmpty(column, Database.OCCUPATION_COLUMN, occupationEdit.getText());
-        putStringValueIfNotEmpty(column, Database.PHONE_NUMBER_COLUMN, phoneEdit.getText());
-        putStringValueIfNotEmpty(column, Database.EMAIL_COLUMN, emailEdit.getText());
+        washAndPutString(column, Database.OCCUPATION_COLUMN, occupationEdit.getText());
+        washAndPutString(column, Database.PHONE_NUMBER_COLUMN, phoneEdit.getText());
+        washAndPutString(column, Database.EMAIL_COLUMN, emailEdit.getText());
         // Return constructed map
         return column;
     }
