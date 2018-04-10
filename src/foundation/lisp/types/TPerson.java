@@ -1,5 +1,7 @@
 package foundation.lisp.types;
 
+import foundation.entity.KinshipDictionary;
+import foundation.entity.Person;
 import foundation.entity.Vertex;
 import foundation.lisp.Interpreter;
 import foundation.lisp.exceptions.InvalidTermException;
@@ -31,16 +33,29 @@ public class TPerson extends TObject<Vertex>
         TPerson.in = interpreter;
     }
 
-    public @NotNull TString kinship(final @NotNull TPerson kinsman)
+    /*
+        Computes the so-called "generation distance" between two relatives.
+        The "generation distance" is the difference between the generation of this person and the generation of `kinsman`.
+     */
+    private @NotNull TNumeral generationDistance(final @NotNull TPerson kinsman)
+    {
+        assert in != null : "Assert: TPerson.generationDistance, illegal state, interpreter is null!";
+        assert getValue() != null : "Assert: TPerson.generationDistance, this.value is null!";
+        assert kinsman.getValue() != null : "Assert: TPerson.generationDistance, kinsman.value is null!";
+        final int distance = in.ontology().tree().generationDistance(getValue(), kinsman.getValue());
+        return new TNumeral(distance);
+    }
+
+    private @NotNull TList kinship(final @NotNull TPerson kinsman)
     {
         assert in != null : "Assert: TPerson.kinship, illegal state, interpreter is null!";
         assert getValue() != null : "Assert: TPerson.kinship, this.value is null!";
         assert kinsman.getValue() != null : "Assert: TPerson.kinship, kinsman.value is null!";
-        final @NotNull String kinTerms = in.ontology().tree().kinship(getValue(), kinsman.getValue());
-        return new TString( kinTerms, false );
+        final @NotNull List<String> kinTerms = in.ontology().tree().kinship(getValue(), kinsman.getValue());
+        return new TList( kinTerms.stream().map(str -> new TString(str, false)).collect(Collectors.toList()) );
     }
 
-    public @NotNull TObject<?> father()
+    private @NotNull TObject<?> father()
     {
         assert getValue() != null : "Assert: TPerson.father, this.value is null!";
         final @Nullable Vertex father = getValue().getFather();
@@ -48,14 +63,14 @@ public class TPerson extends TObject<Vertex>
         return ( father == null )? TVoid.instance : new TPerson(father);
     }
 
-    public @NotNull TList children()
+    private @NotNull TList children()
     {
         assert getValue() != null : "Assert: TPerson.children, this.value is null!";
         final @Nullable List<Vertex> children = getValue().children();
         return new TList( children.stream().map(TPerson::new).collect(Collectors.toList()) );
     }
 
-    public @NotNull TObject<?> spouse()
+    private @NotNull TObject<?> spouse()
     {
         assert getValue() != null : "Assert: TPerson.spouse, this.value is null!";
         final @Nullable Vertex spouse = getValue().getSpouse();
@@ -66,7 +81,7 @@ public class TPerson extends TObject<Vertex>
     /*
         Returns mother (TPerson) of this person or TVoid if there is none.
      */
-    public @NotNull TObject<?> mother()
+    private @NotNull TObject<?> mother()
     {
         assert getValue() != null : "Assert: TPerson.mother, this.value is null!";
         final @Nullable Vertex mother = getValue().getMother();
@@ -74,7 +89,7 @@ public class TPerson extends TObject<Vertex>
         return ( mother == null )? TVoid.instance : new TPerson( mother );
     }
 
-    public static @NotNull TList people()
+    static @NotNull TList people()
     {
         assert in != null : "Assert: TPerson.people(), illegal state, in is null!";
         final @NotNull List<Vertex> vertices = in.ontology().tree().vertices();
@@ -82,12 +97,12 @@ public class TPerson extends TObject<Vertex>
         return new TList( people );
     }
 
-    private @NotNull TObject<?> getAttribute(final TString attrName) throws InvalidTermException
+    private @NotNull TObject<?> getAttribute(final @NotNull TString attrName) throws InvalidTermException
     {
         assert attrName.getValue() != null : "Assert: TPerson.getAttribute, attrName.value is null!";
         assert getValue() != null : "Assert: TPerson.getAttribute, super.value is null!";
         //
-        final String lowercase = attrName.getValue().toLowerCase();
+        final @NotNull String lowercase = attrName.getValue().toLowerCase();
         final @NotNull Vertex v = getValue();
         final @NotNull TObject<?> result;
         switch (lowercase)
@@ -103,6 +118,19 @@ public class TPerson extends TObject<Vertex>
                 result = new TString( v.profile().getLastName(), false );
                 break;
             }
+            case "full name" :
+            {
+                result = new TString( v.profile().getFirstName() + " " + v.profile().getLastName(), false );
+                break;
+            }
+            case "age" :
+            {
+                final @NotNull Calendar birthDate = Person.stringToCalendar( v.profile().getDateOfBirth() );
+                final @NotNull Calendar now       = Calendar.getInstance();
+                final int currentYear = now.get(Calendar.YEAR);
+                final int birthYear   = birthDate.get(Calendar.YEAR);
+                return new TNumeral(currentYear - birthYear);
+            }
             case "birth date" :    // NOTE: Identical to the "birth" case
             case "date of birth" : // NOTE: Identical to the "birth" case
             case "birth" :
@@ -114,7 +142,7 @@ public class TPerson extends TObject<Vertex>
             case "sex" :
             {
                 // NOTE: Either "MALE" or "FEMALE"!
-                result = new TString( v.profile().getSex(), false );
+                result = new TString( v.profile().getSex().toLowerCase(), false );
                 break;
             }
             case "occupation" :
@@ -164,10 +192,10 @@ public class TPerson extends TObject<Vertex>
         return result;
     }
 
-    private static TObject<?> getPerson(final @NotNull Ontology model, final String firstName, final String lastName)
+    private static TObject<?> getPerson(final @NotNull Ontology model, final @NotNull String fullName)
     {
         // Search for a getPerson with provided name
-        final @Nullable Vertex requestedVertex = model.tree().findVertex(firstName, lastName);
+        final @Nullable Vertex requestedVertex = model.tree().getVertex(fullName);
         if (requestedVertex == null)
         {
             return TVoid.instance;
@@ -176,6 +204,33 @@ public class TPerson extends TObject<Vertex>
         {
             return new TPerson(requestedVertex);
         }
+    }
+
+    private static TObject<?> getPerson(final @NotNull Ontology model, final String firstName, final String lastName)
+    {
+        // Search for a getPerson with provided name
+        final @Nullable Vertex requestedVertex = model.tree().getVertex(firstName, lastName);
+        if (requestedVertex == null)
+        {
+            return TVoid.instance;
+        }
+        else
+        {
+            return new TPerson(requestedVertex);
+        }
+    }
+
+    @Override
+    public @NotNull String termToString()
+    {
+        final @Nullable Vertex v = getValue();
+        if ( v == null )
+        {
+            return TVoid.instance.termToString();
+        }
+        final @NotNull String firstName = v.profile().getFirstName();
+        final @NotNull String lastName = v.profile().getLastName();
+        return String.format("(person '%s' '%s')", firstName, lastName);
     }
 
     public static void registerAtomicFunctions(final @NotNull Map<String, TFunction> dict)
@@ -194,11 +249,49 @@ public class TPerson extends TObject<Vertex>
         dict.put(children.getName(), children);
         final @NotNull KinshipFunction kinship = new KinshipFunction();
         dict.put(kinship.getName(), kinship);
+        final @NotNull GenDistanceFunction genDist = new GenDistanceFunction();
+        dict.put(genDist.getName(), genDist);
+        final @NotNull Shorten shorten = new Shorten();
+        dict.put(shorten.getName(), shorten);
+        final @NotNull PutKinshipTerm pkt = new PutKinshipTerm();
+        dict.put(pkt.getName(), pkt);
     }
 
 
 
-    private static class KinshipFunction extends TFunction<TPerson, TString>
+    private static class GenDistanceFunction extends TFunction<TPerson, TNumeral>
+    {
+        GenDistanceFunction()
+        {
+            super("gen-dist", "gen-dist");
+        }
+
+        @Override
+        boolean argsArityMatch(int argsCount)
+        {
+            return argsCount == 2;
+        }
+
+        @NotNull
+        @Override
+        TNumeral call(final @NotNull List<TPerson> args)
+        {
+            // args.size() == 2
+            final @NotNull TPerson from = args.get(0);
+            final @NotNull TPerson to = args.get(1);
+            assert from.getValue() != null : "Assert: gen-dist, from.value is null";
+            assert to.getValue() != null : "Assert: gen-dist, to.value is null";
+            return from.generationDistance(to);
+        }
+
+        @Override
+        String mismatchMessage()
+        {
+            return "Arity mismatch: gen-dist, expected exactly two arguments";
+        }
+    }
+
+    private static class KinshipFunction extends TFunction<TPerson, TList>
     {
         KinshipFunction()
         {
@@ -213,7 +306,7 @@ public class TPerson extends TObject<Vertex>
 
         @NotNull
         @Override
-        TString call(final @NotNull List<TPerson> args)
+        TList call(final @NotNull List<TPerson> args)
         {
             // args.size() == 2
             final @NotNull TPerson p1 = args.get(0);
@@ -238,27 +331,39 @@ public class TPerson extends TObject<Vertex>
         @Override
         boolean argsArityMatch(int argsCount)
         {
-            return argsCount == 2;
+            return (argsCount == 2) || (argsCount == 1);
         }
 
         @NotNull
         @Override
         TObject<?> call(final @NotNull List<TString> args)
         {
-            // args.size() == 2
-            final @NotNull TString firstName = args.get(0);
-            final @NotNull TString lastName = args.get(1);
-            assert firstName.getValue() != null : "Assert: GetPersonFunction.call, firstName.value is null";
-            assert lastName.getValue() != null : "Assert: GetPersonFunction.call, lastName.value is null";
+            // args.size() == 2 or 1
             assert in != null : "Assert: GetPersonFunction.call, interpreter is null!";
             final @NotNull Ontology ontology = in.ontology();
-            return TPerson.getPerson(ontology, firstName.getValue(), lastName.getValue());
+            final TObject<?> result;
+            if (args.size() == 1)
+            {
+                final @NotNull TString fullName = args.get(0);
+                assert fullName.getValue() != null : "Assert, GetPersonFunction.call, name.value is null!";
+                result = TPerson.getPerson(in.ontology(), fullName.getValue());
+            }
+            else
+            {
+                final @NotNull TString firstName = args.get(0);
+                final @NotNull TString lastName = args.get(1);
+                assert firstName.getValue() != null : "Assert: GetPersonFunction.call, firstName.value is null";
+                assert lastName.getValue() != null : "Assert: GetPersonFunction.call, lastName.value is null";
+                result = TPerson.getPerson(ontology, firstName.getValue(), lastName.getValue());
+            }
+            //
+            return result;
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage()
         {
-            return null;
+            return "Arity Mismatch: person, expected either one or two arguments";
         }
     }
 
@@ -278,7 +383,7 @@ public class TPerson extends TObject<Vertex>
 
         @NotNull
         @Override
-        TObject<?> call(@NotNull List<TObject<?>> args) throws InvalidTermException
+        TObject<?> call(final @NotNull List<TObject<?>> args) throws InvalidTermException
         {
             // NOTE: args.size() == 2
             final @NotNull TPerson person = (TPerson)args.get(0);
@@ -339,7 +444,6 @@ public class TPerson extends TObject<Vertex>
                 final @NotNull List<TObject<?>> fathers = new ArrayList<>();
                 for (final TObject<?> item : kin)
                 {
-                    // TODO: Решить что делать с void элементами
                     if ( !item.instanceOf(Type.PERSON) )
                     {
                         final String got = item.getType().getName();
@@ -413,7 +517,6 @@ public class TPerson extends TObject<Vertex>
                 final @NotNull List<TObject<?>> mothers = new ArrayList<>();
                 for (final TObject<?> item : kin)
                 {
-                    // TODO: Решить что делать с void элементами
                     if ( !item.instanceOf(Type.PERSON) )
                     {
                         final String got = item.getType().getName();
@@ -487,7 +590,6 @@ public class TPerson extends TObject<Vertex>
                 final @NotNull List<TObject<?>> spouses = new ArrayList<>();
                 for (final TObject<?> item : kin)
                 {
-                    // TODO: Решить что делать с void элементами
                     if ( !item.instanceOf(Type.PERSON) )
                     {
                         final String got = item.getType().getName();
@@ -553,8 +655,7 @@ public class TPerson extends TObject<Vertex>
                 final @NotNull List<Vertex> allChildren = new ArrayList<>();
                 for (final TObject<?> item : kin)
                 {
-                    // TODO: Решить что делать с void элементами
-                    // TODO: Пока что я их просто пропускаю
+                    // NOTE: Я просто пропускаю все void элементы
                     if ( !item.instanceOf(Type.PERSON) )
                     {
                         final String got = item.getType().getName();
@@ -582,4 +683,80 @@ public class TPerson extends TObject<Vertex>
             return "Arity Mismatch: children, expected exactly one argument";
         }
     }
+
+    private static class Shorten extends TFunction<TList, TList>
+    {
+
+        Shorten()
+        {
+            super("shorten", "shorten");
+        }
+
+        @Override
+        boolean argsArityMatch(int argsCount)
+        {
+            return argsCount == 1;
+        }
+
+        @NotNull
+        @Override
+        TList call(final @NotNull List<TList> args)
+        {
+            // args.size() == 1;
+            final @NotNull TList firstArg = args.get(0);
+            assert firstArg.getValue() != null : "Assert: TPerson.shortenKinshipTerm, term.value is null!";
+            final @NotNull List<String> kinship = firstArg.getValue().stream()
+                    .map(tStr -> (String)tStr.getValue())
+                    .collect(Collectors.toList());
+            //
+            final @NotNull List<TObject<?>> shortenedTerm = KinshipDictionary.instance.shorten(kinship).stream()
+                    .map(str -> new TString(str, false))
+                    .collect(Collectors.toList());
+            return new TList( shortenedTerm );
+        }
+
+        @Override
+        String mismatchMessage()
+        {
+            return "Arity Mismatch: shorten, expected exactly one argument";
+        }
+    }
+
+    private static class PutKinshipTerm extends TFunction<TString, TVoid>
+    {
+
+        PutKinshipTerm()
+        {
+            super("put-kinship-term", "put-kinship-term");
+        }
+
+        @Override
+        boolean argsArityMatch(int argsCount)
+        {
+            return argsCount == 2;
+        }
+
+        @NotNull
+        @Override
+        TVoid call(final @NotNull List<TString> args)
+        {
+            // args.size() == 2;
+            final @NotNull TString longKinshipTerm = args.get(0);
+            assert longKinshipTerm.getValue() != null : "Assert: put-kinship-term, long.value is null!";
+            final @NotNull TString shortKinshipTerm = args.get(1);
+            assert shortKinshipTerm.getValue() != null : "Assert: put-kinship-term, short.value is null!";
+            //
+            final @NotNull KinshipDictionary kinDict = KinshipDictionary.instance;
+            kinDict.putKinship( longKinshipTerm.getValue(), shortKinshipTerm.getValue() );
+            kinDict.saveToFile();
+            return TVoid.instance;
+        }
+
+        @Override
+        String mismatchMessage()
+        {
+            return "Arity Mismatch: put-kinship-term, expected exactly 2 arguments";
+        }
+    }
+
 }

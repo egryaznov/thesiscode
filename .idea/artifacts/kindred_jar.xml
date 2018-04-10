@@ -1,0 +1,21 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="kindred:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/kindred_jar</output-path>
+    <root id="archive" name="kindred.jar">
+      <element id="module-output" name="kindred" />
+      <element id="extracted-dir" path="$USER_HOME$/Documents/jlibs/sqlite-jdbc-3.21.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$APPLICATION_HOME_DIR$/redist/annotations-java8.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/Documents/jlibs/jdatepicker-2.0.3.jar" path-in-jar="/" />
+      <element id="file-copy" path="$APPLICATION_HOME_DIR$/redist/annotations-java8.jar" />
+      <element id="library" level="project" name="jdatepicker-2.0.3" />
+      <element id="library" level="project" name="sqlite-jdbc-3.21.0" />
+      <element id="library" level="project" name="json-simple-1.1.1" />
+      <element id="extracted-dir" path="$USER_HOME$/Documents/jlibs/json-simple-1.1.1.jar" path-in-jar="/" />
+      <element id="directory" name="res">
+        <element id="file-copy" path="$PROJECT_DIR$/out/production/kindred/axioms.lisp" />
+        <element id="file-copy" path="$PROJECT_DIR$/out/production/kindred/kinship-dict.json" />
+        <element id="file-copy" path="$PROJECT_DIR$/res/lisp-doc.json" />
+      </element>
+    </root>
+  </artifact>
+</component>

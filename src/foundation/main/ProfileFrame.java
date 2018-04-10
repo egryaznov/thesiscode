@@ -21,7 +21,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ProfileFrame extends JFrame
+class ProfileFrame extends JFrame
 {
     private static final int NO_ID = -1;
     private JTextField firstNameEdit;
@@ -37,7 +37,8 @@ public class ProfileFrame extends JFrame
     private JLabel dateOfMarriageLabel;
     private JLabel spouseNameLabel;
     private @Nullable Person selectedPerson;
-    private @NotNull GenealogyView view;
+    private @NotNull
+    final GenealogyView view;
 
     ProfileFrame(final @NotNull GenealogyView view)
     {
@@ -70,7 +71,7 @@ public class ProfileFrame extends JFrame
     /*
         Shows this frame in "Create New Profile" mode.
      */
-    public void createNewProfile(final double newNodeX, final double newNodeY)
+    void createNewProfile(final double newNodeX, final double newNodeY)
     {
         setTitle("Kindred: Add a New Profile");
         saveChangesBtn.setText("Create Profile");
@@ -82,7 +83,7 @@ public class ProfileFrame extends JFrame
     /*
         Shows this frame in "Update Profile" mode.
      */
-    public void updateProfile(final @NotNull Person selectedPerson)
+    void updateProfile(final @NotNull Person selectedPerson)
     {
         setTitle("Kindred: Edit Profile");
         saveChangesBtn.setText("Save Changes");

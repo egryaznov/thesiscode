@@ -1,0 +1,547 @@
+{
+  "define" :
+  {
+    "Name" : "Define",
+    "Signature" : "(define abbrev term)",
+    "Description" : "Creates an abbreviation `abbrev` for the specified lisp `term`.",
+    "Arguments" :
+    {
+      "abbrev" : "A shortcut for `term`. Can only be composed of lowercase english letters and a dash.",
+      "term" : "A well-formed lisp term as designatum. Keep in mind that you can use `abbrev` in `term` to create recursion, but make sure that there are no cyclic definitions."
+    },
+    "Examples" : ["(define name 'John Doe')", "(define two 2)", "(define twice (lambda (n) (f (f n))))"],
+    "Type" : "Void",
+    "Notes" : ["This function cannot be used inside another functions, only as a top-level term.", "You cannot redefine standard keywords like define itself, `lambda` and so on."]
+  },
+
+  "lambda" :
+  {
+    "Name" : "Lambda",
+    "Signature" : "(lambda (args) lambda-term)",
+    "Description" : "Instantiates a new anonymous function which takes its arguments `args` and applies them to the `term`",
+    "Arguments" :
+    {
+      "args" : "A list of argument names for this lambda-term separated by space",
+      "term" : "A well-formed lisp term that will be applied to arguments `args`"
+    },
+    "Examples" : ["(lambda () 2)", "(lambda (n) (* 2 n)", "(lambda (a, b) (+ a (* a b))"],
+    "Type" : "(First Argument Type X Second Argument Type X ... X N-th argument Type) -> (Result type of `lambda-term`)",
+    "Notes" : ["You can use only english letters for the names of the arguments", "Argument list is separated by single space", "Empty argument list is permitted"]
+  },
+
+  "and" :
+  {
+    "Name" : "And",
+    "Signature" : "(and boolean+)",
+    "Description" : "Performs a logical AND operation on N boolean terms",
+    "Arguments" :
+    {
+      "boolean1" : "First boolean conjunct",
+      "boolean2" : "Second boolean conjunct",
+      "..." : "...",
+      "booleanN" : "N-th boolean conjunct"
+    },
+    "Examples" : ["(and true) = true", "(and false true) = false", "(and true true false) = false"],
+    "Type" : "(Boolean)^n -> Boolean",
+    "Notes" : "All conjuncts will be evaluated, always. Function accepts any non-zero number of arguments."
+  },
+
+  "or" :
+  {
+      "Name" : "Or",
+      "Signature" : "Performs a logical OR operation on N boolean terms.",
+      "Description" : "(or boolean+)",
+      "Arguments" :
+      {
+         "boolean1" : "First boolean disjunct",
+         "boolean2" : "Second boolean disjunct",
+         "..." : "...",
+         "booleanN" : "N-th boolean disjunct"
+      },
+      "Examples" : ["(or true) = true", "(or false true) = true", "(or false false true) = true"],
+      "Type" : "(Boolean)^n -> Boolean",
+      "Notes" : "All disjuncts will be evaluated, always. Function accepts any non-zero number of arguments."
+  },
+
+  "not" :
+  {
+      "Name" : "Not",
+      "Signature" : "(not boolean-term)",
+      "Description" : "Performs a logical NOT operation on exactly one boolean term.",
+      "Arguments" :
+      {
+          "boolean" : "A boolean term, whose value will be inverted."
+      },
+      "Examples" : ["(not true) = false", "(not false) = true"],
+      "Type" : "Boolean -> Boolean",
+      "Notes" : "This function accepts only one boolean argument."
+  },
+
+  "during" :
+  {
+      "Name" : "During",
+      "Signature" : "(during date-point date-star date-end)",
+      "Description" : "Checks whether the date `date-point` is after `date-start` and before `date-finish`. Returns `true` iff `date-point` belongs to the time interval [`date-start`, `date-date-end`]",
+      "Arguments" :
+      {
+          "date-point" : "A date which is going to be checked for belonging to the time interval [`date-start`, `date-end`]",
+          "date-start" : "A starting point of the time interval",
+          "date-end" : "An ending point of the time interval"
+      },
+      "Examples" : ["(during WWII 1900 2000) = true"],
+      "Type" : "(Date)^3 -> Boolean",
+      "Notes" : ""
+  },
+
+  "before" :
+  {
+      "Name" : "Before",
+      "Signature" : "(before date-pointA date-pointB)",
+      "Description" : "Checks whether date point A is happened before date point B. Returns true or false accordingly.",
+      "Arguments" :
+      {
+          "date-pointA" : "First time point, which is needed to be before the second point for the formula to result in `true`.",
+          "date-pointB" : "Second time point"
+      },
+      "Examples" : ["(before WWII WWI) = false"],
+      "Type" : "(Date)^2 -> Boolean",
+      "Notes" : ""
+  },
+
+  "after" :
+  {
+      "Name" : "After",
+      "Signature" : "(after date-pointA date-pointB)",
+      "Description" : "Checks whether date point A is happened after date point B. Returns true or false accordingly.",
+      "Arguments" :
+      {
+          "date-pointA" : "First time point, which is needed to be after the second point for the formula to result in `true`.",
+          "date-pointB" : "Second time point"
+      },
+      "Examples" : ["(after WWII WWI) = false"],
+      "Type" : "(Date)^2 -> Boolean",
+      "Notes" : ""
+  },
+  
+  "date" : 
+  {
+      "Name" : "Date",
+      "Signature" : "(date string-date)",
+      "Description" : "Parses `string-date` and returns a date object created from this string",
+      "Arguments" : 
+      {
+          "string-date" : "A string representation of a date object. Should be in the format: dd.mm.year."
+      },
+      "Examples" : ["(date '10.11.1995)", "(date '01.01.1900')"],
+      "Type" : "String -> Date",
+      "Notes" : "You should strictly follow the date format in order for this function to work. Void is returned iff invalid string is passed to this function. "
+  },
+  
+  "list" : 
+  {
+      "Name" : "List",
+      "Signature" : "(list args+)",
+      "Description" : "Creates a list object from passed arguments.",
+      "Arguments" : 
+      {
+          "args" : "A space-separated list of objects out of which list will be created"
+      },
+      "Examples" : ["(list 1 2 3 4)", "(list 'first' 'second' 'third')", "(list 1 'two' (date '1.1.1990'))"],
+      "Type" : "(Object)^n -> List",
+      "Notes" : "Accepts non-zero number of arguments. Parameters are allowed to be of different type. If you want an empty list, use the term `vacant`."
+  },
+  
+  "join" : 
+  {
+      "Name" : "Join",
+      "Signature" : "(join list+)",
+      "Description" : "Concatenates N lists",
+      "Arguments" : 
+      {
+          "list" : "A space-separated sequence of lists to be concatenated "
+      },
+      "Examples" : ["(join list1 list2)", "(join list)", "(join (list 1 2) (list 3) (list 4)) = [1, 2, 3, 4]"],
+      "Type" : "(List)^n -> List",
+      "Notes" : "Accepts non-zero number of arguments."
+  },
+  
+  "count" : 
+  {
+      "Name" : "Count",
+      "Signature" : "(count list)",
+      "Description" : "Returns the number of elements in `list`.",
+      "Arguments" : 
+      {
+          "list" : "A list object."
+      },
+      "Examples" : ["(count (list 1 2 3)) = 3", "(count (list 1)) = 1"],
+      "Type" : "List -> Numeral",
+      "Notes" : "Accepts a non-zero number of arguments."
+  },
+  
+  "filter" :
+  {
+      "Name" : "Filter",
+      "Signature" : "(filter predicate list)",
+      "Description" : "Takes a predicate together with a list and retains only those elements, which satisfy predicates' condition. ",
+      "Arguments" :
+      {
+          "predicate" : "Lambda function of type Object -> Boolean, which we apply to all elements in `list`",
+          "list" : "A list which needs to be filtered"
+      },
+      "Examples" : ["(filter odd? (list 1 2 3 4 5)) = [1, 3, 5]", "(filter uppercase? (list 'TEST' 'test' 'tEsT')) = ['TEST']"],
+      "Type" : "(Lambda X List) -> List",
+      "Notes" : ""
+  },
+
+   "at" :
+   {
+       "Name" : "At",
+       "Signature" : "(at list index)",
+       "Description" : "Returns the `index`-th element of `list`.",
+       "Arguments" :
+       {
+           "list index" : "A list whose element at specified place will be taken "
+       },
+       "Examples" : ["(at (list 1 2 3 4) 3) = 4", "(at (list 0 1 2) 3) = void", "(at (list 0 1 2 3 4 5) -1) = 5"],
+       "Type" : "(List X Numeral) -> Object",
+       "Notes" : "Indices start with 0. If there is no item at specified index, than Void is returned. Indices can be negative, e.g. -1 points to last element, -2 -- penultimate, -3 -- antepenultimate ans so on."
+   },
+
+  "append" : 
+  {
+      "Name" : "Append",
+      "Signature" : "(append list item+)",
+      "Description" : "Includes all `item`s in the end of `list`.",
+      "Arguments" : 
+      {
+          "list" : "A list to which items will be included",
+          "item+" : "A space-separated sequence of objects that will be included in the `list`"
+      },
+      "Examples" : ["(append list 1)", "(append (list 1 2 3) 4 5 6) = [1, 2, 3, 4, 5, 6]"],
+      "Type" : "(List X (Object)^n) -> List",
+      "Notes" : "You can pass any positive number of arguments"
+  },
+  
+  "mod" :
+  {
+      "Name" : "Modulo",
+      "Signature" : "(mod a n)",
+      "Description" : "Computes a residue modulo `n`, i.e. the remainder of a natural division of `a` by `n`",
+      "Arguments" : 
+      {
+          "a" : "Dividend",
+          "n" : "Divisor"
+      },
+      "Examples" : ["(mod 5 2) = 1", "(mod 10 4) = 2"],
+      "Type" : "(Numeral)^2 -> Numeral",
+      "Notes" : "Divisor should not be zero."
+  },
+  
+  "+" :
+  {
+      "Name" : "Addition",
+      "Signature" : "(+ number+)",
+      "Description" : "Calculates sum of all `number`s.",
+      "Arguments" :
+      {
+          "number+" : "A non-empty space-separated sequence of numeral terms."
+      },
+      "Examples" : ["(+ 2) = 2", "(+ 1357 10) = 1367", "(+ 1 2 3) = 6"],
+      "Type" : "(Numeral)^n -> Numeral",
+      "Notes" : "The function accepts any positive number of arguments"
+  },
+
+
+  "*" :
+  {
+    "Name" : "Multiplication",
+    "Signature" : "(* number+)",
+    "Description" : "Calculates product of all `number`s.",
+    "Arguments" :
+    {
+      "number+" : "A non-empty space-separated sequence of numeral terms."
+    },
+    "Examples" : ["(* 2) = 2", "(* 1357 10) = 13570", "(* 1 2 3) = 6"],
+    "Type" : "(Numeral)^n -> Numeral",
+    "Notes" : "The function accepts any positive number of arguments"
+  },
+
+  "<=" :
+  {
+      "Name" : "Less Or Equals",
+      "Signature" : "(<= a b)",
+      "Description" : "Checks whether `a` <= `b`",
+      "Arguments" :
+      {
+          "a" : "first numeral to be compared",
+          "b" : "second numeral to be compared"
+      },
+      "Examples" : ["(<= 2 5) = true", "(<= 10 3) = false"],
+      "Type" : "(Numeral)^2 -> Boolean",
+      "Notes" : "Function expects exactly two numerals as arguments."
+  },
+
+  "<" :
+  {
+    "Name" : "Less",
+    "Signature" : "(< a b)",
+    "Description" : "Checks whether `a` < `b`",
+    "Arguments" :
+    {
+      "a" : "first numeral to be compared",
+      "b" : "second numeral to be compared"
+    },
+    "Examples" : ["(< 2 5) = true", "(< 10 3) = false"],
+    "Type" : "(Numeral)^2 -> Boolean",
+    "Notes" : "Function expects exactly two numerals as arguments."
+  },
+
+  ">" :
+  {
+    "Name" : "Greater",
+    "Signature" : "(> a b)",
+    "Description" : "Checks whether `a` > `b`",
+    "Arguments" :
+    {
+      "a" : "first numeral to be compared",
+      "b" : "second numeral to be compared"
+    },
+    "Examples" : ["(> 5 2) = true", "(> 10 13) = false"],
+    "Type" : "(Numeral)^2 -> Boolean",
+    "Notes" : "Function expects exactly two numerals as arguments."
+  },
+
+  ">=" : 
+  {
+      "Name" : "Greater Or Equals",
+      "Signature" : "(>= a b)",
+      "Description" : "Checks whether `a` >= `b`",
+      "Arguments" : 
+      {
+          "a" : "first numeral to be compared",
+          "b" : "second numeral to be compared"
+      },
+      "Examples" : ["(>= 5 5) = true", "(>= 3 5) = false"],
+      "Type" : "(Numeral)^2 -> Boolean",
+      "Notes" : "Function expects exactly two numerals as arguments."
+  },
+  
+  "concat" : 
+  {
+      "Name" : "String Concatenation",
+      "Signature" : "(concat string+)",
+      "Description" : "Concatenates all `string`s",
+      "Arguments" : 
+      {
+          "string" : "A non-empty space-separated sequence of string objects."
+      },
+      "Examples" : ["(concat 'test' 'ing' ' concat') = 'testing concat'", "(concat 'hello ' 'world!') = 'hello world!'"],
+      "Type" : "(String)^n -> String",
+      "Notes" : "This function accepts any positive number of arguments."
+  },
+  
+  "of-type?" : 
+  {
+      "Name" : "Of Type?",
+      "Signature" : "(of-type? o type)",
+      "Description" : "Returns true iff object `o` has a `type`.",
+      "Arguments" : 
+      {
+          "o type" : "An object whose type needs to be checked",
+          "type" : "A name of a type"
+      },
+      "Examples" : ["(of-type? 'test' 'string) = true", "(of-type? 3 'date') = false"],
+      "Type" : "(Object X String) -> Boolean",
+      "Notes" : "The name of a type should be entered precisely"
+  },
+  
+  "=" :
+  {
+      "Name" : "Equals",
+      "Signature" : "(equals? objA objB)",
+      "Description" : "Returns true iff `objA` and `objB` are exactly the same thing.",
+      "Arguments" :
+      {
+          "objA" : "First object to be compared",
+          "objB" : "Second object to be compared"
+      },
+      "Examples" : ["(= '3' 3) = false", "(= 10 10) = true", "(= (date '1.1.1999') (date '1.1.1999')) = true"],
+      "Type" : "(Object)^2 -> Boolean",
+      "Notes" : "Function accepts exactly two arguments"
+  },
+
+  "-" :
+  {
+      "Name" : "Subtraction",
+      "Signature" : "(sub m s)",
+      "Description" : "Calculates the difference between m (minuend) and s (subtrahend).",
+      "Arguments" :
+      {
+          "m" : "Minuend",
+          "s" : "Subtrahend"
+      },
+      "Examples" : ["(sub 5 2) = 3", "(sub 0 1) = -1"],
+      "Type" : "(Numeral)^2 -> Numeral",
+      "Notes" : "Accepts exactly two arguments."
+  },
+
+  "/" :
+  {
+      "Name" : "Integer division",
+      "Signature" : "(div n m)",
+      "Description" : "Calculates the quotient from integer division of n (dividend) by m (divisor)",
+      "Arguments" :
+      {
+          "n" : "Dividend",
+          "m" : "Divisor"
+      },
+      "Examples" : ["(div 10 2) = 5", "(div 5 2) = 2", "(div 3 2) = 1"],
+      "Type" : "(Numeral)^2 -> Numeral",
+      "Notes" : "Accepts exactly two arguments. Divisor shouldn't be zero, or exception will be thrown"
+  },
+
+  "father" :
+  {
+      "Name" : "Father",
+      "Signature" : "(father person)",
+      "Description" : "Returns father of the specified person",
+      "Arguments" :
+      {
+          "person" : "A link to a person object"
+      },
+      "Examples" : ["(father (person 'John' 'Golt'))", "(father (person 'Emma Clark'))"],
+      "Type" : "Person -> Person",
+      "Notes" : "Accepts and returns exactly one object of type Person. If provided person doesn't have a father, returns Void."
+  },
+
+  "mother" :
+  {
+    "Name" : "Mother",
+    "Signature" : "(mother person)",
+    "Description" : "Returns mother of the specified person",
+    "Arguments" :
+    {
+      "person" : "A link to a person object"
+    },
+    "Examples" : ["(mother (person 'John' 'Golt'))", "(mother (person 'Emma Clark'))"],
+    "Type" : "Person -> Person",
+    "Notes" : "Accepts and returns exactly one object of type Person. If provided person doesn't have a mother, returns Void."
+  },
+
+  "spouse" :
+  {
+    "Name" : "Spouse",
+    "Signature" : "(spouse person)",
+    "Description" : "Returns spouse of the specified person",
+    "Arguments" :
+    {
+      "person" : "A link to a person object"
+    },
+    "Examples" : ["(spouse (person 'John' 'Golt'))", "(spouse (person 'Emma Clark'))"],
+    "Type" : "Person -> Person",
+    "Notes" : "Accepts and returns exactly one object of type Person. If provided person doesn't have a spouse, returns Void."
+  },
+
+  "children" :
+  {
+    "Name" : "Children",
+    "Signature" : "(children person)",
+    "Description" : "Returns list of persons' children",
+    "Arguments" :
+    {
+      "person" : "A link to a person object"
+    },
+    "Examples" : ["(children (person 'John' 'Golt'))", "(children (person 'Emma Clark'))"],
+    "Type" : "Person -> List",
+    "Notes" : "Returns empty list if the specified person is childless."
+  },
+
+  "gen-dist" : 
+  {
+      "Name" : "Generation Distance",
+      "Signature" : "(gen-dist person1 person2)",
+      "Description" : "Calculates the `generation distance` between two people",
+      "Arguments" : 
+      {
+          "person1" : "First person",
+          "person2" : "Second person"
+      },
+      "Examples" : ["(gen-dist me (father me)) = -1", "(gen-dist me (grandfather me)) = -2", "(gen-dist me (son me)) = 1"],
+      "Type" : "(Person)^2 -> Numeral",
+      "Notes" : "Generation distance is the difference between generations. The generation of the first person is assumed to be zero, and the generation of the second person is calculated accordingly."
+  },
+  
+  "person" : 
+  {
+      "Name" : "Person",
+      "Signature" : "(person first-name)",
+      "Description" : "Returns the person with specified first and last name",
+      "Arguments" : 
+      {
+          "first-name" : "A string with the first name of a person"
+      },
+      "Examples" : ["(person 'John' 'Doe')"],
+      "Type" : "String^2 -> Person",
+      "Notes" : "The function also accepts full name in one string: (person 'Full Name')"
+  },
+  
+ "kinship" :
+ {
+     "Name" : "Kinship",
+     "Signature" : "(kinship person1 person2)",
+     "Description" : "Returns a list of basic kinship terms (strings) that represents how is `person1` related to `person2`.",
+     "Arguments" :
+     {
+         "person1 person2" : "First person"
+     },
+     "Examples" : ["(kinship (father me) me) = ['father']", "(kinship (uncle me) me) = ['son','parent','parent']"],
+     "Type" : "Person^2 -> List",
+     "Notes" : "Basic kinship terms are: 'father', 'mother', 'parent', 'son', 'daughter', 'child', 'husband', 'wife', 'spouse'"
+ },
+ 
+  "attr" : 
+  {
+      "Name" : "Get Attribute",
+      "Signature" : "(attr person prop)",
+      "Description" : "Returns requested property `prop` of the specified `person`.",
+      "Arguments" : 
+      {
+          "person" : "Person of interest",
+          "prop"   : "Property of interest"
+      },
+      "Examples" : ["(attr (person 'John Golt') 'first name') = 'John'", "(attr (person 'John Golt') 'sex') = 'MALE'))"],
+      "Type" : "(Person X String) -> Object",
+      "Notes" : "All possible properties are: 'first name', 'last name', 'full name', 'second name', 'birth', 'birth date', 'date of birth', 'gender', 'sex', 'occupation', 'phone', 'phone number', 'tel', 'email', 'e-mail', 'wedding'."
+  },
+  
+  "shorten" : 
+  {
+      "Name" : "Shorten Kinship Term",
+      "Signature" : "(shorten list)",
+      "Description" : "Reduces the list of basic kinship terms.",
+      "Arguments" : 
+      {
+          "list" : "List of basic kinship terms."
+      },
+      "Examples" : ["(shorten (kinship person1 person2))"],
+      "Type" : "List -> List",
+      "Notes" : ""
+  },
+  
+  "put-kinship-term" : 
+  {
+      "Name" : "Put Kinship Term",
+      "Signature" : "(put-kinship-term list-basic shortcut)",
+      "Description" : "Registers a new custom kinship term `shortcut` from the list of basic terms `list-basic`. The new term can be used later in `shorten` function.",
+      "Arguments" : 
+      {
+          "list-basic" : "Non-empty list of basic kinship terms",
+          "shortcut" : "A string with a definition of a new kinship term"
+      },
+      "Examples" : ["(put-kinship-term (list 'son' 'parent' 'parent') 'uncle')", "(put-kinship-term (list 'son' 'parent') 'brother')"],
+      "Type" : "Void",
+      "Notes" : ""
+  }
+
+}

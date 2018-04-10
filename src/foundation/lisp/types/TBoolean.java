@@ -11,8 +11,8 @@ public class TBoolean extends TObject<Boolean>
 {
     public static final String TRUE_KEYWORD = "true";
     public static final String FALSE_KEYWORD = "false";
-    public static final TBoolean TRUE = new TBoolean(true);
-    public static final TBoolean FALSE = new TBoolean(false);
+    private static final TBoolean TRUE = new TBoolean(true);
+    static final TBoolean FALSE = new TBoolean(false);
 
     private TBoolean(final boolean value)
     {
@@ -21,7 +21,7 @@ public class TBoolean extends TObject<Boolean>
 
 
 
-    public @NotNull TBoolean not()
+    private @NotNull TBoolean not()
     {
         // this.geValue() is ensured to be not null
         assert ( this.getValue() != null ) : "Assert: TBoolean.not, the `super.value` is NULL";
@@ -44,7 +44,7 @@ public class TBoolean extends TObject<Boolean>
         return new TBoolean(this.getValue() && bool.getValue());
     }
 
-    public static boolean isBoolean(final String literal)
+    static boolean isBoolean(final String literal)
     {
         return literal.equals(TRUE_KEYWORD) || literal.equals(FALSE_KEYWORD);
     }
@@ -63,7 +63,7 @@ public class TBoolean extends TObject<Boolean>
     }
 
     @SuppressWarnings("unused")
-    public static @NotNull TBoolean parseBoolean(final String primitive)
+    static @NotNull TBoolean parseBoolean(final String primitive)
     {
         // NOTE: Why not just use a constructor instead of this method?
         // NOTE: Because we don't want to allow creating instances of this class,
@@ -86,6 +86,12 @@ public class TBoolean extends TObject<Boolean>
     public static @NotNull TBoolean get(final boolean primitive)
     {
         return (primitive)? TRUE : FALSE;
+    }
+
+    @Override
+    public @NotNull String termToString()
+    {
+        return valueToString();
     }
 
     public static void registerAtomicFunctions(final @NotNull Map<String, TFunction> dict)

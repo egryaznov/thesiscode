@@ -84,6 +84,11 @@ public class Interpreter
         TList.registerAtomicFunctions( atomicFunctions );
     }
 
+    public @NotNull Map<String, TFunction> getAtomicFunctions()
+    {
+        return atomicFunctions;
+    }
+
     public @NotNull Ontology ontology()
     {
         return ontology;
@@ -102,7 +107,7 @@ public class Interpreter
             @Nullable String nextLine = br.readLine();
             while ( nextLine != null )
             {
-                // NOTE: Строка с комментарием должна начинаться с ';
+                // NOTE: Строка с комментарием должна начинаться с ;
                 if (nextLine.isEmpty())
                 {
                     terms = terms.concat(" ");
@@ -209,7 +214,7 @@ public class Interpreter
         final long time = System.nanoTime();
         if ( !isTermValid(query) )
         {
-            throw new InvalidTermException("Invalid term: " + query);
+            throw new InvalidTermException("Not well-formed term: " + query);
         }
         //
         final String clippedQuery = (isQueryClipped)? query : clip(query);
@@ -235,12 +240,12 @@ public class Interpreter
             {
                 throw new InvalidTermException("Cannot redefine a keyword: " + reference);
             }
-            // Check whether the `reference` is already defined
-            if (definitions.containsKey(reference))
+            if ( definitions.containsKey(reference) )
             {
-                throw new InvalidTermException("Duplicate definition of a reference: " + reference);
+                throw new InvalidTermException("Cannot redefine previously defined reference: " + reference);
             }
-            definitions.put( reference, rewrite(terms.get(2), definitions) );
+            final @NotNull String designatum = terms.get(2);
+            definitions.put( reference, eval(designatum).termToString() );
             result = TVoid.instance;
         }
         else
@@ -269,7 +274,8 @@ public class Interpreter
     /*
         Evaluates the `term` and returns the result of its' evaluation.
      */
-    private @NotNull TObject<?> eval(final String term) throws InterpreterException
+    @SuppressWarnings("unchecked")
+    public @NotNull TObject<?> eval(final String term) throws InterpreterException
     {
         final @NotNull TObject<?> result;
         if ( isPrimitive(term) )
@@ -285,6 +291,8 @@ public class Interpreter
             result = new Lambda(this, term);
         }
         // XXX: Может сделать if функцией в TObject и избавиться от этого кейса?
+        // XXX: Не получится, т.к. если if сделать отдельной функцией, то придётся вычислять оба под-терма,
+        // XXX: if & else, что сделает невозможным выполнение рекурсии.
         else if ( isIf(term) )
         {
             // Extract subterms
@@ -322,16 +330,12 @@ public class Interpreter
             }
             // Proceed with evaluation of the new term
             final @NotNull List<String> subTerms = splitByTerms(term);
-            final String leader = subTerms.get(0);
+            final @NotNull String firstSubTerm = subTerms.get(0);
+            final String leader = definitions.getOrDefault(firstSubTerm, firstSubTerm);
             @NotNull TFunction<TObject, TObject> leaderFunction;
             if ( leader.equals(DEFINE_KEYWORD) )
             {
                 throw new InvalidTermException("Define is not allowed in functional terms");
-            }
-            else if ( definitions.containsKey(leader) )
-            {
-                // NOTE: Для поддержки рекурсии в термах
-                return eval( term );
             }
             else if ( isLambda(leader) )
             {

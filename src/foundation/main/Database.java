@@ -16,18 +16,18 @@ public class Database
 {
     public static final String MALE = "MALE";
     public static final String FEMALE = "FEMALE";
-    public static final String NO_PHOTO = "EMPTY";
-    public static final String PHOTO_X_COLUMN = "x";
-    public static final String PHOTO_Y_COLUMN = "y";
-    public static final String PHOTO_PATH_COLUMN = "path";
-    public static final String PERSON_ID_COLUMN = "id";
-    public static final String FIRST_NAME_COLUMN = "first_name";
-    public static final String LAST_NAME_COLUMN = "last_name";
-    public static final String SEX_COLUMN = "sex";
-    public static final String DATE_OF_BIRTH_COLUMN = "date_of_birth";
-    public static final String OCCUPATION_COLUMN = "occupation";
-    public static final String PHONE_NUMBER_COLUMN = "phone_number";
-    public static final String EMAIL_COLUMN = "email";
+    static final String NO_PHOTO = "EMPTY";
+    static final String PHOTO_X_COLUMN = "x";
+    static final String PHOTO_Y_COLUMN = "y";
+    static final String PHOTO_PATH_COLUMN = "path";
+    static final String PERSON_ID_COLUMN = "id";
+    static final String FIRST_NAME_COLUMN = "first_name";
+    static final String LAST_NAME_COLUMN = "last_name";
+    static final String SEX_COLUMN = "sex";
+    static final String DATE_OF_BIRTH_COLUMN = "date_of_birth";
+    static final String OCCUPATION_COLUMN = "occupation";
+    static final String PHONE_NUMBER_COLUMN = "phone_number";
+    static final String EMAIL_COLUMN = "email";
     public static final @NotNull Database instance = new Database();
     private Connection connection;
 
@@ -35,13 +35,13 @@ public class Database
 
 
 
-    public @Nullable Connection getConnection()
+    @Nullable Connection getConnection()
     {
         return connection;
     }
 
 
-    public void createNewDatabase(final String title)
+    void createNewDatabase(final String title)
     {
         final String databasePath = "res/genealogies/" + title + "/genealogy.kindb";
         establishConnection(databasePath);
@@ -68,7 +68,7 @@ public class Database
     /*
         Creates new person in the database and returns his ID.
      */
-    public int insertPerson(final @NotNull Map<String, String> column)
+    int insertPerson(final @NotNull Map<String, String> column)
     {
         int newPersonID;
         final String insert = "INSERT INTO person(first_name, last_name, sex, date_of_birth, occupation, " +
@@ -98,7 +98,7 @@ public class Database
     /*
         Deletes all quotes from the string `str` and returns its clean version.
      */
-    public String wash(final String str)
+    String wash(final String str)
     {
         final StringBuilder clean = new StringBuilder();
         for (int i = 0; i < str.length(); i++)
@@ -115,7 +115,7 @@ public class Database
     /*
         Wraps a string in single quotes.
      */
-    public String wrap(final String str)
+    String wrap(final String str)
     {
         return "'" + str + "'";
     }
@@ -124,7 +124,7 @@ public class Database
         Prepares a string to be stored in the DB by deleting all quotes from it first and then wrapping it in
         single quotes.
      */
-    public String prepareStringValue(final String str)
+    String prepareStringValue(final String str)
     {
         return wrap( wash(str) );
     }
@@ -132,7 +132,7 @@ public class Database
     /*
         Inserts a new row in the table `photo` with specified `path`, `x` and `y`.
      */
-    public int insertPhoto(final String path, final double x, final double y)
+    int insertPhoto(final @NotNull String path, final double x, final double y)
     {
         int newPhotoID;
         final String insert = "INSERT INTO photo(path, x, y) VALUES (?, ?, ?)";
@@ -155,7 +155,7 @@ public class Database
     /*
         Removes the record from the table `beget` with specified `parentID` and `childID`.
      */
-    public void removeParentship(final int parentID, final int childID)
+    void removeParentship(final int parentID, final int childID)
     {
         final String command = String.format("DELETE FROM beget WHERE parent_id = %d AND child_id = %d", parentID, childID);
         issueSQL(command);
@@ -164,7 +164,7 @@ public class Database
     /*
         Removes the record from the table `wed` with specified `firstSpouseID` and `secondSpouseID`.
      */
-    public void divorce(final int firstSpouseID, final int secondSpouseID)
+    void divorce(final int firstSpouseID, final int secondSpouseID)
     {
         final String command = String.format("DELETE FROM wed WHERE" +
                 "(first_spouse_id = %d AND second_spouse_id = %d) OR (first_spouse_id = %d AND second_spouse_id = %d)",
@@ -214,7 +214,7 @@ public class Database
             SQLiteConfig config = new SQLiteConfig();
             config.enforceForeignKeys(true);
             connection = DriverManager.getConnection("jdbc:sqlite:" + databaseFile, config.toProperties());
-            System.out.print("Connection to the database has been established");
+            System.out.println("Connection to the database has been established");
         } catch (SQLException e)
         {
             e.printStackTrace();
@@ -256,7 +256,7 @@ public class Database
     /*
         Executes UPDATE, INSERT or DELETE query, which doesn't have any result.
      */
-    public void issueSQL(final String sql)
+    void issueSQL(final String sql)
     {
         try ( final @NotNull Statement s = connection.createStatement() )
         {
@@ -271,7 +271,7 @@ public class Database
     /*
         Returns the ID of the photo of a person with ID == `personID`
      */
-    public int personIDtoPhotoID(final int personID)
+    int personIDtoPhotoID(final int personID)
     {
         int photoID = -1;
         final String queryPhotoIDbyPersonID = "SELECT photo_id FROM has WHERE person_id = " + personID;

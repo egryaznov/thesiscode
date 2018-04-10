@@ -17,7 +17,6 @@ public abstract class TFunction<T, R> extends TObject<String>
     }
 
 
-
     abstract boolean argsArityMatch(final int argsCount);
 
     abstract @NotNull R call(final @NotNull List<T> args) throws InterpreterException;
@@ -58,6 +57,12 @@ public abstract class TFunction<T, R> extends TObject<String>
                 expectedType.substring(expectedLastDotIndex + 1, expectedType.length()),
                 gotType.substring(gotLastDotIndex + 1, gotType.length())
         );
+    }
+
+    @Override
+    public @NotNull String termToString()
+    {
+        return name;
     }
 
     @Override

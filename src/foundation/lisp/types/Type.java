@@ -16,7 +16,7 @@ public enum Type
     @NotNull DATE("date", TDate::isDate, TDate::parseDate, true),
     @NotNull LIST("list", (term -> term.equals(TList.EMPTY_LIST_KEYWORD)), (t -> TList.EMPTY_LIST), true),
     @NotNull PERSON("person", (term -> term.equals(TPerson.PEOPLE_KEYWORD)), (s -> TPerson.people()), true),
-    @NotNull FUNCTION("function", false);
+    @NotNull FUNCTION("function", null, null, false);
 
     private final boolean isPrimitive;
     private final @NotNull String name;
@@ -32,11 +32,6 @@ public enum Type
         this.parse = parse;
         this.canParse = canParse;
         this.isPrimitive = isPrimitive;
-    }
-
-    Type(final @NotNull String name, final boolean isPrimitive)
-    {
-        this(name, null, null, isPrimitive);
     }
 
 

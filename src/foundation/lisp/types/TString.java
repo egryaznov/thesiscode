@@ -8,13 +8,7 @@ import java.util.Map;
 // NOTE: Value этого класса хранится как строка без одинарных кавычек,
 public class TString extends TObject<String>
 {
-    public static final TString EMPTY_STRING = new TString("", false);
-
-    // NOTE: Pass only quoted strings here!!!
-    private TString(final String value)
-    {
-        this(value, true);
-    }
+    private static final TString EMPTY_STRING = new TString("", false);
 
     TString(final String value, final boolean quoted)
     {
@@ -28,18 +22,13 @@ public class TString extends TObject<String>
         Removes single quotes from the string `s`.
         For example, removeQuotes("'hello'") = "hello"
      */
-    static String removeQuotes(final String s)
+    private static String removeQuotes(final String s)
     {
         final int len = s.length();
         return s.substring(1, len - 1);
     }
 
-    private String quote(final String s)
-    {
-        return "'" + s + "'";
-    }
-
-    public @NotNull TString concat(final @NotNull TString s)
+    private @NotNull TString concat(final @NotNull TString s)
     {
         // getValue() != null guaranteed
         assert ( getValue() != null ) : "Assert: TString.concat, getValue() is NULL";
@@ -49,7 +38,7 @@ public class TString extends TObject<String>
         return new TString( s1.concat(s2), false );
     }
 
-    public static boolean isString(final String term)
+    static boolean isString(final String term)
     {
         final char firstChar = term.charAt(0);
         final char lastChar = term.charAt(term.length() - 1);
@@ -63,7 +52,11 @@ public class TString extends TObject<String>
         dict.put( concatenation.getName(), concatenation );
     }
 
-
+    @Override
+    public @NotNull String termToString()
+    {
+        return valueToString();
+    }
 
     private static class Concatenation extends TFunction<TString, TString>
     {

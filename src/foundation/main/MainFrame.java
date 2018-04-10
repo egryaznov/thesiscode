@@ -31,11 +31,11 @@ public class MainFrame extends JFrame
         Contains the ON/OFF boolean values of all the graphics options
      */
     public static final Map<String, Boolean> graphicsOptions = new HashMap<>();
-    public static final String TITLE = "Kindred: Genealogy Tree";
-    public static final String SHAPE_ANTIALIASING = "Shape Antialiasing";
-    public static final String TEXT_ANTIALIASING = "Text Antialiasing";
+    static final String TITLE = "Kindred: Genealogy Tree";
+    static final String SHAPE_ANTIALIASING = "Shape Antialiasing";
+    static final String TEXT_ANTIALIASING = "Text Antialiasing";
     public static final String FILLED_CIRCLES = "Filled Circles";
-    public static final String ANIMATION = "Animation";
+    static final String ANIMATION = "Animation";
     private @Nullable GenealogyView genealogyView;
     private @Nullable VirtualAssistantView vaView;
 
@@ -84,6 +84,10 @@ public class MainFrame extends JFrame
         jmFile.add(jmiSaveAll);
         jmFile.add(new JSeparator());
         jmFile.add(jmiQuit);
+        // Set CMD-Key shortcuts to items in 'File' menu
+        jmiNewGenealogy.setAccelerator( KeyStroke.getKeyStroke('N', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) );
+        jmiOpenGenealogy.setAccelerator( KeyStroke.getKeyStroke('O', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) );
+        jmiSaveAll.setAccelerator( KeyStroke.getKeyStroke('S', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) );
         // Register File menu listeners
         jmiNewGenealogy.addActionListener(new NewGenealogyMenuListener());
         jmiOpenGenealogy.addActionListener(new OpenGenealogyMenuListener());

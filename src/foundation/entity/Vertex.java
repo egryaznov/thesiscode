@@ -75,22 +75,17 @@ public class Vertex
         children.add(child);
     }
 
-    public int getID()
-    {
-        return id;
-    }
-
     public @NotNull List<Vertex> children()
     {
         return Collections.unmodifiableList(children);
     }
 
-    public boolean isBlack()
+    private boolean isBlack()
     {
         return black;
     }
 
-    public boolean isGrey()
+    private boolean isGrey()
     {
         return grey;
     }

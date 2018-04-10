@@ -12,13 +12,13 @@ public abstract class TObject<T>
     private final @NotNull Type type;
     private @Nullable T value;
 
-    public TObject(final @NotNull Type type, final @Nullable T value)
+    TObject(final @NotNull Type type, final @Nullable T value)
     {
         this.type = type;
         this.value = value;
     }
 
-    public TObject(final @NotNull Type type)
+    TObject(final @NotNull Type type)
     {
         this(type, null);
     }
@@ -26,7 +26,7 @@ public abstract class TObject<T>
 
 
 
-    protected  @Nullable T getValue()
+    @Nullable T getValue()
     {
         return value;
     }
@@ -51,6 +51,8 @@ public abstract class TObject<T>
         return this.type.equals(type);
     }
 
+    public abstract @NotNull String termToString();
+
     @Override
     public String toString()
     {
@@ -61,7 +63,7 @@ public abstract class TObject<T>
     public boolean equals(final Object obj)
     {
         final boolean equals;
-        if ((obj != null) && (obj instanceof TObject<?>))
+        if ((obj instanceof TObject<?>))
         {
             final @NotNull TObject<?> tObj = (TObject<?>)obj;
             final boolean valuesEqual;
@@ -83,7 +85,7 @@ public abstract class TObject<T>
         return equals;
     }
 
-    public boolean isVoid()
+    boolean isVoid()
     {
         return instanceOf(Type.VOID);
     }
@@ -143,28 +145,23 @@ public abstract class TObject<T>
             final @NotNull TString rawType = (TString)args.get(1);
             assert patient.getValue() != null : "Assert: OfType.call, patient.value is null";
             assert rawType.getValue()    != null : "Assert: OfType.call, type.value is null";
+            final @NotNull String typeStrLowercased = rawType.getValue().toLowerCase();
             @Nullable Type type = null;
-            for (Type t : Type.values())
+            for (final Type t : Type.values())
             {
-                if (t.getName().equals(rawType.getValue()))
+                if (t.getName().equals(typeStrLowercased))
                 {
                     type = t;
                 }
             }
-            if (type == null)
-            {
-                return TBoolean.FALSE;
-            }
-            else
-            {
-                return TBoolean.get( patient.instanceOf(type) );
-            }
+            //
+            return (type == null)? TBoolean.FALSE : TBoolean.get( patient.instanceOf(type) );
         }
 
         @Override
         String mismatchMessage()
         {
-            return null;
+            return "Arity mismatch: of-type?, expected exactly 2 arguments";
         }
     }
 

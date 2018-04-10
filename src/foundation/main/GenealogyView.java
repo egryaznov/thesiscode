@@ -27,8 +27,8 @@ import java.util.TimerTask;
 
 public class GenealogyView extends JPanel
 {
-    private static final int DEFAULT_WIDTH = 1200;
-    private static final int DEFAULT_HEIGHT = 800;
+    static final int DEFAULT_WIDTH = 1200;
+    static final int DEFAULT_HEIGHT = 800;
     public static final int DEFAULT_CIRCLE_DIAMETER = 50;
     public static final int DEFAULT_CIRCLE_RADIUS = DEFAULT_CIRCLE_DIAMETER / 2;
     private static final @NotNull Color BACKGROUND_COLOR = new Color(153, 217, 234);
@@ -83,7 +83,7 @@ public class GenealogyView extends JPanel
     /*
         Cancels animation timer.
      */
-    public void stopAnimation()
+    void stopAnimation()
     {
         animationTimer.cancel();
     }
@@ -195,7 +195,7 @@ public class GenealogyView extends JPanel
         model.getPeople().forEach(node -> node.draw(this, g2d));
     }
 
-    public @NotNull JFrame getParentFrame()
+    @NotNull JFrame getParentFrame()
     {
         return (JFrame)SwingUtilities.getWindowAncestor(this);
     }
@@ -210,9 +210,17 @@ public class GenealogyView extends JPanel
         return camera;
     }
 
-    public @NotNull Ontology getModel()
+    @NotNull Ontology getModel()
     {
         return model;
+    }
+
+    void centerOnPerson(final @NotNull Person p)
+    {
+        camera.center(
+                camera.toScreenX( p.getX() + DEFAULT_CIRCLE_RADIUS ),
+                camera.toScreenY( p.getY() + DEFAULT_CIRCLE_RADIUS )
+        );
     }
 
 

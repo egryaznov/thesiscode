@@ -44,6 +44,8 @@ public class Lambda extends TFunction<TObject, TObject>
         {
             throw new InvalidTermException("Malformed lambda term: " + lambdaTerm);
         }
+        //
+        in.getAtomicFunctions().put(getName(), this);
     }
 
 
@@ -95,10 +97,11 @@ public class Lambda extends TFunction<TObject, TObject>
         final @NotNull Map<String, String> aliasToArg = new HashMap<>();
         for (int i = 0; i < args.size(); i++)
         {
-            aliasToArg.put(paramAliases.get(i), args.get(i).valueToString());
+            aliasToArg.put(paramAliases.get(i), args.get(i).termToString());
         }
         final String rewrittenFuncTerm = in.rewrite(funcTerm, aliasToArg);
-        //
-        return in.exec( rewrittenFuncTerm, true, false);
+        // NOTE: rewrittenFuncTerm не перезаписывается!!!
+        return in.eval( rewrittenFuncTerm );
     }
+
 }

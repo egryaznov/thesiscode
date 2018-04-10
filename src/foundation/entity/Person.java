@@ -29,7 +29,8 @@ public class Person
     private boolean male;
     private String firstName;
     private String lastName;
-    private @Nullable Image photo;
+    private @Nullable
+    final Image photo;
     private @NotNull String dateOfBirth;
     private String occupation;
     private String phone;
@@ -103,7 +104,7 @@ public class Person
         return lastName;
     }
 
-    public @NotNull Color getColor()
+    @NotNull Color getColor()
     {
         return (selected)? Person.SELECTED_NODE_COLOR : (male)? Person.MALE_NODE_COLOR : Person.FEMALE_NODE_COLOR;
     }
@@ -311,7 +312,7 @@ public class Person
     @Override
     public String toString()
     {
-        return String.format("'#%d %s %s'", id, firstName, lastName);
+        return String.format("#%d %s %s", id, firstName, lastName);
     }
 
     @Override

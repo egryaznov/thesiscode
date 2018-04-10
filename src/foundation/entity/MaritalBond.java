@@ -12,7 +12,7 @@ import java.awt.Stroke;
 public class MaritalBond extends Bond
 {
     private static final @NotNull Color MARITAL_BOND_COLOR = new Color(255, 128, 0);
-    private String dateOfWedding;
+    private final String dateOfWedding;
 
     public MaritalBond(final @NotNull Person firstPerson, final @NotNull Person secondPerson, final String dateOfWedding)
     {
@@ -54,7 +54,7 @@ public class MaritalBond extends Bond
     }
 
     @Override
-    public @NotNull Color getColor()
+    @NotNull Color getColor()
     {
         return MARITAL_BOND_COLOR;
     }

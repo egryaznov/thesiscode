@@ -19,8 +19,19 @@ public class TNumeral extends TObject<Long>
     }
 
 
+    /**
+     * Calculates the difference between this number (minuend) and {@code n} (subtrahend).
+     * @param n  subtrahend.
+     * @return Difference.
+     */
+    private @NotNull TNumeral sub(final @NotNull TNumeral n)
+    {
+        assert this.getValue() != null : "Assert: TNumeral.sub, this.value is null!";
+        assert n.getValue() != null : "Assert: TNumeral.sub, n.value is null!";
+        return new TNumeral( getValue() - n.getValue() );
+    }
 
-    public @NotNull TNumeral mul(final @NotNull TNumeral n)
+    private @NotNull TNumeral mul(final @NotNull TNumeral n)
     {
         // getValue() != null guaranteed
         assert getValue() != null : "Assert: TNumeral.mul, super.value is null!";
@@ -28,7 +39,23 @@ public class TNumeral extends TObject<Long>
         return new TNumeral( getValue() * n.getValue() );
     }
 
-   public @NotNull TNumeral mod(final @NotNull TNumeral modulo) throws InvalidTermException
+    /**
+     * Performs an integer division: floor(a / b), where numerator (a) is this class, and denominator, (b) is n.
+     * @param n divisor
+     * @return The quotient of the integer division floor(this / n)
+     */
+    private @NotNull TNumeral div(final @NotNull TNumeral n) throws InvalidTermException
+    {
+        assert this.getValue() != null : "Assert: TNumeral.sub, this.value is null!";
+        assert n.getValue() != null : "Assert: TNumeral.sub, n.value is null!";
+        if ( n.getValue() == 0 )
+        {
+            throw new InvalidTermException("div, divisor is zero!");
+        }
+        return new TNumeral( getValue() / n.getValue() );
+    }
+
+    private @NotNull TNumeral mod(final @NotNull TNumeral modulo) throws InvalidTermException
    {
        assert getValue() != null : "Assert: mod, value is null!";
        assert modulo.getValue() != null : "Assert: mod, modulo.value is null!";
@@ -37,13 +64,10 @@ public class TNumeral extends TObject<Long>
        {
            throw new InvalidTermException("mod, second argument is zero!");
        }
-       else
-       {
-           return new TNumeral(getValue() % mod);
-       }
+       return new TNumeral(getValue() % mod);
    }
 
-    public @NotNull TNumeral add(final @NotNull TNumeral n)
+    private @NotNull TNumeral add(final @NotNull TNumeral n)
     {
         // getValue() != null guaranteed
         assert getValue() != null : "Assert: TNumeral.mul, super.value is null!";
@@ -51,7 +75,7 @@ public class TNumeral extends TObject<Long>
         return new TNumeral( getValue() + n.getValue() );
     }
 
-    public static boolean isNumeral(final @NotNull String term)
+    static boolean isNumeral(final @NotNull String term)
     {
         final char firstChar = term.charAt(0);
         if ( (firstChar != '-') && (isNotDigit(firstChar)) )
@@ -81,6 +105,11 @@ public class TNumeral extends TObject<Long>
         return (chr < '0') || (chr > '9');
     }
 
+    @Override
+    public @NotNull String termToString()
+    {
+        return valueToString();
+    }
 
     public static void registerAtomicFunctions(final @NotNull Map<String, TFunction> dict)
     {
@@ -105,6 +134,12 @@ public class TNumeral extends TObject<Long>
         // Modulo
         final @NotNull TFunction mod = new Modulo();
         dict.put( mod.getName(), mod );
+        // Subtraction
+        final @NotNull TFunction sub = new Subtraction();
+        dict.put( sub.getName(), sub );
+        // Division
+        final @NotNull TFunction div = new Division();
+        dict.put(div.getName(), div);
     }
 
 
@@ -140,7 +175,6 @@ public class TNumeral extends TObject<Long>
         }
     }
 
-
     private static class Addition extends TFunction<TNumeral, TNumeral>
     {
         private Addition()
@@ -167,6 +201,36 @@ public class TNumeral extends TObject<Long>
         }
     }
 
+    private static class Subtraction extends TFunction<TNumeral, TNumeral>
+    {
+        Subtraction()
+        {
+            super("-", "-");
+        }
+
+        @Override
+        boolean argsArityMatch(int argsCount)
+        {
+            return argsCount == 2;
+        }
+
+        @NotNull
+        @Override
+        TNumeral call(final @NotNull List<TNumeral> args)
+        {
+            // args.size == 2
+            final @NotNull TNumeral minuend = args.get(0);
+            final @NotNull TNumeral subtrahend = args.get(1);
+            return minuend.sub( subtrahend );
+        }
+
+        @Override
+        String mismatchMessage()
+        {
+            return "Arity Mismatch: sub, expected exactly 2 arguments";
+        }
+    }
+
     private static class Multiplication extends TFunction<TNumeral, TNumeral>
     {
         private Multiplication()
@@ -190,6 +254,36 @@ public class TNumeral extends TObject<Long>
         public boolean argsArityMatch(final int argsCount)
         {
             return argsCount > 0;
+        }
+    }
+
+    private static class Division extends TFunction<TNumeral, TNumeral>
+    {
+        Division()
+        {
+            super("/", "/");
+        }
+
+        @Override
+        boolean argsArityMatch(int argsCount)
+        {
+            return argsCount == 2;
+        }
+
+        @NotNull
+        @Override
+        TNumeral call(final @NotNull List<TNumeral> args) throws InvalidTermException
+        {
+            // args.size == 2
+            final @NotNull TNumeral dividend = args.get(0);
+            final @NotNull TNumeral divisor = args.get(1);
+            return dividend.div( divisor );
+        }
+
+        @Override
+        String mismatchMessage()
+        {
+            return "Arity Mismatch: div, expected exactly 2 arguments";
         }
     }
 

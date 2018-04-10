@@ -1,7 +1,7 @@
 package foundation;
 
 import foundation.lisp.Interpreter;
-import foundation.lisp.exceptions.IllegalStateException;
+import foundation.lisp.exceptions.IllegalInterpreterStateException;
 import foundation.lisp.exceptions.InterpreterException;
 import foundation.lisp.exceptions.InvalidTermException;
 import foundation.lisp.exceptions.NotEnoughKnowledge;
@@ -13,15 +13,16 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.EventQueue;
 import java.io.File;
 
-public class Main
+class Main
 {
+
     public static void main(String[] args)
     {
         EventQueue.invokeLater(MainFrame::new);
-        // m();
+        // test();
     }
 
-
+    @SuppressWarnings("unused")
     private static void m()
     {
         Database.instance.establishConnection( "res/genealogies/my/genealogy.kindb" );
@@ -30,7 +31,6 @@ public class Main
         final String query = "(kinship (person 'Евгений' 'Грязнов') (person 'Олег' 'Федотов'))";
         try
         {
-            // TODO -- 1. Добавление новых типов и функций. 2. Включение интерпретатора в основную программу.
             in.exec(new File("res/axioms.lisp"));
             System.out.println( in.exec(query, false, true) );
             // System.out.println( in.splitByTerms(in.rewrite(query), true, true) );
@@ -41,7 +41,7 @@ public class Main
         {
             System.out.println(e.getMessage());
         }
-        catch (final IllegalStateException e)
+        catch (final IllegalInterpreterStateException e)
         {
             System.out.println(e.getMessage() + "\n");
             e.printStackTrace();
@@ -51,4 +51,5 @@ public class Main
             e.printStackTrace();
         }
     }
+
 }

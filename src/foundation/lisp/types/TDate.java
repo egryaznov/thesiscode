@@ -30,13 +30,13 @@ public class TDate extends TObject<Calendar>
     /*
         Checks whether a string matches the date of birth pattern: "dd.mm.year".
      */
-    public static boolean isDate(final String date)
+    static boolean isDate(final String date)
     {
         return date.equals(NOW_KEYWORD) || date.matches(DATE_PATTERN);
     }
 
     @SuppressWarnings("unused")
-    public @NotNull TBoolean before(final @NotNull TDate date)
+    private @NotNull TBoolean before(final @NotNull TDate date)
     {
         assert this.getValue() != null : "Assert: TDate.before, super.value is null";
         assert date.getValue() != null : "Assert: TDate.before, date.value is null";
@@ -44,7 +44,7 @@ public class TDate extends TObject<Calendar>
     }
 
     @SuppressWarnings("unused")
-    public @NotNull TBoolean after(final @NotNull TDate date)
+    private @NotNull TBoolean after(final @NotNull TDate date)
     {
         assert this.getValue() != null : "Assert: TDate.after, super.value is null";
         assert date.getValue() != null : "Assert: TDate.after, date.value is null";
@@ -54,7 +54,7 @@ public class TDate extends TObject<Calendar>
     }
 
     @SuppressWarnings("unused")
-    public @NotNull TBoolean during(final @NotNull TDate beginning, final @NotNull TDate end)
+    private @NotNull TBoolean during(final @NotNull TDate beginning, final @NotNull TDate end)
     {
         assert after(beginning).getValue() != null : "Assert: TDate.during, super.value is null";
         assert before(end).getValue() != null : "Assert: TDate.during, beginning.value is null";
@@ -78,7 +78,7 @@ public class TDate extends TObject<Calendar>
         dict.put( date.getName(), date );
     }
 
-    public static @NotNull TDate parseDate(final String rawDate) throws InvalidTermException
+    static @NotNull TDate parseDate(final String rawDate) throws InvalidTermException
     {
         // Check whether `rawDate` is a well-formed date type
         if ( isDate(rawDate) )
@@ -103,6 +103,13 @@ public class TDate extends TObject<Calendar>
         {
             return Person.calendarToString(value);
         }
+    }
+
+    @Override
+    public @NotNull String termToString()
+    {
+        final @Nullable Calendar value = getValue();
+        return ( value == null )? TVoid.instance.valueToString() : String.format("(date %s)", Person.calendarToString(value));
     }
 
     private static class During extends TFunction<TDate, TBoolean>

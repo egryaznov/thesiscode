@@ -3,17 +3,19 @@ package foundation.lisp.types;
 import foundation.lisp.exceptions.InterpreterException;
 import foundation.lisp.exceptions.InvalidTermException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 // NOTE: Лучше использовать ArrayList как реализацию интерфейса List
 public class TList extends TObject<List<TObject<?>>>
 {
-    public static final TList EMPTY_LIST = new TList( Collections.emptyList() );
-    public static final String EMPTY_LIST_KEYWORD = "vacant";
+    static final TList EMPTY_LIST = new TList( Collections.emptyList() );
+    static final String EMPTY_LIST_KEYWORD = "vacant";
 
     TList(final @NotNull List<TObject<?>> list)
     {
@@ -22,16 +24,12 @@ public class TList extends TObject<List<TObject<?>>>
 
 
 
-    private static @NotNull TList list(final @NotNull List<TObject<?>> items)
-    {
-        return new TList( items );
-    }
-
     /*
         Returns an object in the list at the specified index, or TVoid if there is no such object.
         First element has a zero (0) index.
      */
-    public @NotNull TObject<?> at(final @NotNull TNumeral numeralIndex)
+    @NotNull
+    private TObject<?> at(final @NotNull TNumeral numeralIndex)
     {
         assert getValue() != null : "Assert: at, this.value is null";
         assert numeralIndex.getValue() != null: "Assert: at, index.value is null";
@@ -45,22 +43,18 @@ public class TList extends TObject<List<TObject<?>>>
             return TVoid.instance;
         }
         // NOTE: Int.MIN_VALUE < index < Int.MAX_VALUE
-        final int index = (int)longIndex;
         final int len = getValue().size();
-        if (longIndex < 0)
-        {
-            return getValue().get( len + index);
-        }
-        else
-        {
-            return getValue().get( index );
-        }
+        final int index = (int)( (longIndex < 0)? (len + longIndex) : longIndex );
+        final @NotNull TObject<?> result = ( index < 0 || index >= len )? TVoid.instance : getValue().get( index );
+        //
+        return result;
     }
 
     /*
         Concatenates this list with the specified tail list.
      */
-    public @NotNull TList join(final @NotNull TList tail)
+    @NotNull
+    private TList join(final @NotNull TList tail)
     {
         assert getValue() != null : "Assert: TList.join, value is null!";
         assert tail.getValue() != null : "Assert: TList.join, tail.value is null!";
@@ -70,10 +64,36 @@ public class TList extends TObject<List<TObject<?>>>
         return new TList( resultList );
     }
 
+    private @NotNull TObject<?> head()
+    {
+        assert getValue() != null : "Assert TList.head, value is null!";
+        final @NotNull List<TObject<?>> items = getValue();
+        if ( items.isEmpty() )
+        {
+            return EMPTY_LIST;
+        }
+        //
+        return at(new TNumeral(0));
+    }
+
+    private @NotNull TList tail()
+    {
+        assert getValue() != null : "Assert TList.tail, value is null!";
+        final @NotNull List<TObject<?>> items = getValue();
+        final int count = items.size();
+        if ( count < 2 )
+        {
+            return EMPTY_LIST;
+        }
+        //
+        return new TList(items.subList(1, count));
+    }
+
     /*
         Appends a specified item to this list.
      */
-    public @NotNull TList append(final @NotNull TObject<?> item)
+    @NotNull
+    private TList append(final @NotNull TObject<?> item)
     {
         assert getValue() != null : "Assert: TList.append, value is null!";
         final @NotNull List<TObject<?>> result = new ArrayList<>(getValue());
@@ -81,14 +101,13 @@ public class TList extends TObject<List<TObject<?>>>
         return new TList( result );
     }
 
-
-    public @NotNull TNumeral count()
+    private @NotNull TNumeral count()
     {
         assert getValue() != null : "Assert: TList.count, super.value is null";
         return new TNumeral( getValue().size() );
     }
 
-    public @NotNull TList filter(final @NotNull TFunction<TObject<?>, TObject<?>> predicate) throws InterpreterException
+    private @NotNull TList filter(final @NotNull TFunction<TObject<?>, TObject<?>> predicate) throws InterpreterException
     {
         assert getValue() != null : "Assert: TList.filter, super.value is null";
         final @NotNull List<TObject<?>> filteredList = new ArrayList<>(); // ArrayList is better than LinkedList in our case
@@ -116,6 +135,21 @@ public class TList extends TObject<List<TObject<?>>>
         return new TList(filteredList);
     }
 
+    @Override
+    public @NotNull String termToString()
+    {
+        final @Nullable List<TObject<?>> items = getValue();
+        if ( items == null )
+        {
+            return TVoid.instance.valueToString();
+        }
+        //
+        final @NotNull String tokens = items.stream()
+                .map(TObject::termToString)
+                .collect(Collectors.joining(" "));
+        return String.format("(list %s)", tokens);
+    }
+
     public static void registerAtomicFunctions(final @NotNull Map<String, TFunction> dict)
     {
         final @NotNull ListFunction list = new ListFunction();
@@ -135,6 +169,12 @@ public class TList extends TObject<List<TObject<?>>>
         //
         final @NotNull Append append = new Append();
         dict.put(append.getName(), append);
+        //
+        final @NotNull Head head = new Head();
+        dict.put(head.getName(), head);
+        //
+        final @NotNull Tail tail = new Tail();
+        dict.put(tail.getName(), tail);
     }
 
 
@@ -156,7 +196,7 @@ public class TList extends TObject<List<TObject<?>>>
         @Override
         TList call(final @NotNull List<TObject<?>> args)
         {
-            return list(args);
+            return new TList(args);
         }
 
         @Override
@@ -225,6 +265,7 @@ public class TList extends TObject<List<TObject<?>>>
             {
                 throw new InvalidTermException("Type Mismatch: filter, first argument, expected a predicate: Object -> Boolean, found a " + firstArg.getType().getName());
             }
+            //noinspection unchecked
             final @NotNull TFunction<TObject<?>, TObject<?>> predicate = (TFunction<TObject<?>, TObject<?>>)firstArg;
             //
             if ( !secondArg.instanceOf(Type.LIST) )
@@ -296,7 +337,7 @@ public class TList extends TObject<List<TObject<?>>>
         @Override
         boolean argsArityMatch(int argsCount)
         {
-            return argsCount >= 1;
+            return argsCount > 0;
         }
 
         @NotNull
@@ -355,4 +396,67 @@ public class TList extends TObject<List<TObject<?>>>
             return "Arity Mismatch: append, expected at least 2 arguments.";
         }
     }
+
+    private static class Head extends TFunction<TList, TObject<?>>
+    {
+
+        Head()
+        {
+            super("head", "head");
+        }
+
+
+        @Override
+        boolean argsArityMatch(int argsCount)
+        {
+            return argsCount == 1;
+        }
+
+        @NotNull
+        @Override
+        TObject<?> call(final @NotNull List<TList> args)
+        {
+            // args.size == 1
+            final @NotNull TList list = args.get(0);
+            return list.head();
+        }
+
+        @Override
+        @NotNull String mismatchMessage()
+        {
+            return "Arity Mismatch: head, expected exactly one argument";
+        }
+    }
+
+    private static class Tail extends TFunction<TList, TList>
+    {
+
+        Tail()
+        {
+            super("tail", "tail");
+        }
+
+
+        @Override
+        boolean argsArityMatch(int argsCount)
+        {
+            return argsCount == 1;
+        }
+
+        @NotNull
+        @Override
+        TList call(final @NotNull List<TList> args)
+        {
+            // args.size == 1
+            final @NotNull TList list = args.get(0);
+            return list.tail();
+        }
+
+        @Override
+        @NotNull String mismatchMessage()
+        {
+            return "Arity Mismatch: tail, expected exactly one argument.";
+        }
+    }
+
 }

@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class Ontology
 {
@@ -92,9 +93,9 @@ public class Ontology
     {
         final String queryWed = "SELECT first_spouse_id, second_spouse_id, date_of_wedding FROM wed";
         final String queryBeget = "SELECT * FROM beget";
-        try (final @NotNull Statement stWed = Database.instance.getConnection().createStatement();
+        try (final @NotNull Statement stWed = Objects.requireNonNull(Database.instance.getConnection()).createStatement();
              final @NotNull Statement stBeget = Database.instance.getConnection().createStatement();
-                final @Nullable ResultSet wedTable = stWed.executeQuery(queryWed);
+             final @Nullable ResultSet wedTable = stWed.executeQuery(queryWed);
              final @Nullable ResultSet begetTable = stBeget.executeQuery(queryBeget))
         {
             if ((wedTable == null) || (begetTable == null))
@@ -137,8 +138,8 @@ public class Ontology
         final String queryAllPeople = "SELECT person.id , person.first_name, person.last_name, person.sex, person.date_of_birth, person.occupation, person.phone_number, person.email, photo.path, photo.x, photo.y " +
                 "FROM person, has, photo " +
                 "WHERE person.id = has.person_id AND has.photo_id = photo.id";
-        try (final @NotNull Statement st = Database.instance.getConnection().createStatement();
-                final @Nullable ResultSet personsTable = st.executeQuery(queryAllPeople) )
+        try (final @NotNull Statement st = Objects.requireNonNull(Database.instance.getConnection()).createStatement();
+             final @Nullable ResultSet personsTable = st.executeQuery(queryAllPeople) )
         {
             if (personsTable == null)
             {
@@ -189,7 +190,7 @@ public class Ontology
     /*
          Updates the row in tables 'person' and 'photo' with information stored in the `person`.
      */
-    public void commitToDatabase(final @NotNull Person person)
+    void commitToDatabase(final @NotNull Person person)
     {
         // Update table 'photo' with new person position
         final String updatePhoto = String.format("UPDATE photo SET x = %d, y = %d WHERE id = %d",
@@ -216,7 +217,7 @@ public class Ontology
     /*
         Returns the marital bond which is linked to the `spouse` or NULL if there is no such bond.
      */
-    public @Nullable MaritalBond getMaritalBond(final @NotNull Person spouse)
+    @Nullable MaritalBond getMaritalBond(final @NotNull Person spouse)
     {
         return (MaritalBond) bonds.stream()
                 .filter(bond -> ((bond instanceof MaritalBond) && bond.isLinkedTo(spouse)))
@@ -226,7 +227,7 @@ public class Ontology
     /*
         Checks whether the two people `first` and `second` are linked to each other in some marital bond.
      */
-    public boolean areMarried(final @NotNull Person first, final @NotNull Person second)
+    boolean areMarried(final @NotNull Person first, final @NotNull Person second)
     {
         final @Nullable MaritalBond marriage = getMaritalBond(first);
         return (marriage != null) && (marriage.isBetween(first, second) || marriage.isBetween(second, first));
@@ -246,7 +247,7 @@ public class Ontology
         Checks whether the node `person` is linked to some other node by a marital bond.
         Returns true iff it isn't.
      */
-    public boolean isNotMarried(final @NotNull Person person)
+    boolean isNotMarried(final @NotNull Person person)
     {
         return getMaritalBond(person) == null;
     }
@@ -254,7 +255,7 @@ public class Ontology
     /*
         Checks whether two people `first` and `second` are connected via some non-marital bond.
      */
-    public boolean isParentOrChild(final @NotNull Person first, final @NotNull Person second)
+    boolean isParentOrChild(final @NotNull Person first, final @NotNull Person second)
     {
         return bonds.stream().anyMatch( bond -> ( !(bond instanceof MaritalBond)
                 && (bond.isBetween(first, second) || bond.isBetween(second, first)) ) );
@@ -264,7 +265,7 @@ public class Ontology
         Creates two marital entity between `firstSpouse` and `SecondSpouse` with the specified
         `weddingDate` and adds them to the 'entity' list. Also inserts two rows in the table 'wed'.
      */
-    public void marry(final @NotNull Person firstSpouse, final @NotNull Person secondSpouse, final String weddingDate)
+    void marry(final @NotNull Person firstSpouse, final @NotNull Person secondSpouse, final String weddingDate)
     {
         final String preparedWeddingDate = Database.instance.prepareStringValue(weddingDate);
         final String insert = String.format(
@@ -290,7 +291,7 @@ public class Ontology
         Removes two marital entity between `firstSpouse` and `secondSpouse` from the list 'entity`.
         Also removes two rows with the corresponding IDs from the table `wed`.
      */
-    public void divorce(final @NotNull Person firstSpouse, final @NotNull Person secondSpouse)
+    void divorce(final @NotNull Person firstSpouse, final @NotNull Person secondSpouse)
     {
         bonds.removeIf( bond -> bond.isBetween(firstSpouse, secondSpouse) || bond.isBetween(secondSpouse, firstSpouse) );
         Database.instance.divorce(firstSpouse.getID(), secondSpouse.getID());
@@ -340,7 +341,7 @@ public class Ontology
         Removes parental bond between `first` and `second` from the model.
         Also removes parental row from the table `beget`.
      */
-    public void removeParentship(final @NotNull Person first, final @NotNull Person second)
+    void removeParentship(final @NotNull Person first, final @NotNull Person second)
     {
         final @Nullable Bond parentship = bonds.stream()
                 .filter( bond -> (!(bond instanceof MaritalBond)
@@ -370,7 +371,7 @@ public class Ontology
          4. A record from the table `photo`.
          5. A record from the table `has`.
      */
-    public void removePerson(final @NotNull Person person)
+    void removePerson(final @NotNull Person person)
     {
         people.remove(person);
         deleteAllBondsWithNode(person);
@@ -386,14 +387,14 @@ public class Ontology
         tree = null;
     }
 
-    public void addPerson(final @NotNull Person person)
+    void addPerson(final @NotNull Person person)
     {
         people.add(person);
         // Drop the pre-generated family tree because it's no longer contains the right information
         tree = null;
     }
 
-    public void addBond(final @NotNull Bond bond)
+    void addBond(final @NotNull Bond bond)
     {
         bonds.add(bond);
         // Drop the pre-generated family tree because it's no longer contains the right information
@@ -403,7 +404,7 @@ public class Ontology
     /*
         Returns the read-only version of the ArrayList `people`.
      */
-    public @NotNull List<Person> getPeople()
+    @NotNull List<Person> getPeople()
     {
         return Collections.unmodifiableList(people);
     }
@@ -411,7 +412,7 @@ public class Ontology
     /*
         Returns the read-only version of the ArrayList `bonds`.
      */
-    public @NotNull List<Bond> getBonds()
+    @NotNull List<Bond> getBonds()
     {
         return Collections.unmodifiableList(bonds);
     }
@@ -425,11 +426,9 @@ public class Ontology
     {
         if (tree == null)
         {
-            return generateFamilyTree();
+            tree = generateFamilyTree();
         }
-        else
-        {
-            return tree;
-        }
+        //
+        return tree;
     }
 }

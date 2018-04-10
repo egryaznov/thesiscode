@@ -3,11 +3,13 @@ package foundation.entity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 
 public class FamilyTree
@@ -21,69 +23,161 @@ public class FamilyTree
         this.vertices = Collections.unmodifiableList(vertices);
     }
 
+
+
     /*
-        Returns the vertex which incapsulates the specified person, or null if the is no such vertex.
-        Complexity: O(n)
+        Returns all relatives who are related to `ego` by the `kinship` term.
+        For example, f('John Golt', 'uncle') = list of uncles of John Golt.
      */
-    public @Nullable Vertex vertex(final @NotNull Person person)
+    public @NotNull List<Vertex> findRelatives(final @NotNull Vertex ego, final @NotNull String relative)
     {
-        return vertices.stream()
-                .filter(v -> v.getID() == person.getID())
-                .findAny()
-                .orElse(null);
+        final @NotNull List<Vertex> result = new LinkedList<>();
+        for (final Vertex v : vertices)
+        {
+            final @NotNull List<String> vToEgoKinship = KinshipDictionary.instance.shorten( kinship(ego, v) );
+            if ( vToEgoKinship.size() != 1 )
+            {
+                continue;
+            }
+            // Add `v`, the next person, to the result if he/she matches `relative`
+            final @NotNull String vToEgo = vToEgoKinship.get(0);
+            switch (relative)
+            {
+                case "children" :
+                case "child" :
+                {
+                    if ( vToEgo.equals("son") || vToEgo.equals("daughter") )
+                    {
+                        result.add(v);
+                    }
+                    break;
+                }
+                case "parents" :
+                case "parent" :
+                {
+                    if ( vToEgo.equals("mother") || vToEgo.equals("father") )
+                    {
+                        result.add(v);
+                    }
+                    break;
+                }
+                case "spouse" :
+                {
+                    if ( vToEgo.equals("wife") || vToEgo.equals("husband") )
+                    {
+                        result.add(v);
+                    }
+                    break;
+                }
+                default:
+                {
+                    if ( vToEgo.equals(relative) )
+                    {
+                        result.add(v);
+                    }
+                    break;
+                }
+            }
+        }
+        //
+        return result;
     }
 
     public @NotNull List<Vertex> vertices()
     {
-        return Collections.unmodifiableList( vertices );
+        return Collections.unmodifiableList( this.vertices );
     }
 
     /*
-        Performs BFS on this tree and finds the shortest path between two specified vertices: `from` and `to`.
-        Returns a stack of basic kinship terms which you need to perform on `from` to get to `to` in this tree.
-        Basic kinship terms: 'father', 'mother', 'spouse', 'child#index'
-     */
-    public @NotNull String kinship(final @NotNull Vertex from, final @NotNull Vertex to)
+            Performs BFS on this tree and finds the shortest path between two specified vertices: `from` and `to`.
+            Returns a stack of basic kinship terms which you need to perform on `from` to get to `to` in this tree.
+            Basic kinship terms: 'father', 'mother', 'spouse', 'child#index'
+         */
+    public @NotNull List<String> kinship(final @NotNull Vertex from, final @NotNull Vertex to)
     {
         final @NotNull Map<Vertex, Vertex> parents = bfs(from);
         @Nullable Vertex prev = to;
-        final StringBuilder kinship = new StringBuilder();
+        final @NotNull List<String> terms = new ArrayList<>();
         while ( parents.get(prev) != null )
         {
-            kinship.append( basicKinTerm(prev, parents.get(prev)) );
-            kinship.append(" of ");
+            terms.add( basicKinTerm(prev, parents.get(prev)) );
             prev = parents.get(prev);
         }
-        kinship.append("me");
         //
-        return kinship.toString();
+        return terms;
     }
 
-    private String basicKinTerm(final @NotNull Vertex from, final @NotNull Vertex to)
+    /*
+        Finds out how the two closest relatives, `from` and `to` are related.
+        Returns one of the six basic kinship relations: either father or mother or husband or wife or son or daughter.
+     */
+    private @NotNull String basicKinTerm(final @NotNull Vertex from, final @NotNull Vertex to)
     {
+        final String result;
         final @Nullable Vertex toFather = to.getFather();
         final @Nullable Vertex toMother = to.getMother();
         final @Nullable Vertex toSpouse = to.getSpouse();
         if ((toSpouse != null) && (toSpouse.equals(from)))
         {
-            return "spouse";
+            // from is a spouse of to
+            result = ( from.profile().isMale() )? "husband" : "wife";
         }
-        if ((toFather != null) && (toFather.equals(from)))
+        else if ((toFather != null) && (toFather.equals(from)))
         {
-            return "father";
+            // from is a father of to
+            result = "father";
         }
-        if ((toMother != null) && (toMother.equals(from)))
+        else if ((toMother != null) && (toMother.equals(from)))
         {
-            return "mother";
+            // from is a mother of to
+            result = "mother";
         }
         else
         {
-            return "child";
+            // from is a child of to
+            result = ( from.profile().isMale() )? "son" : "daughter";
         }
+        //
+        return result;
     }
 
+    /*
+        Computes the so-called "generation distance" between two relatives.
+        The "generation distance" is the difference between the generation of person `from` and the generation of
+        person `to`.
+     */
+    public int generationDistance(final @NotNull Vertex from, final @NotNull Vertex to)
+    {
+        final @NotNull Map<Vertex, Vertex> parentBFS = bfs(from);
+        @Nullable Vertex parent = to;
+        int distance = 0;
+        while (parentBFS.get(parent) != null)
+        {
+            final @NotNull String kinTerm = basicKinTerm(parent, parentBFS.get(parent));
+            // Adjust the distance according to kinship term
+            switch (kinTerm)
+            {
+                case "father" :
+                case "mother" :
+                {
+                    distance++;
+                    break;
+                }
+                case "daughter" :
+                case "son" :
+                {
+                    distance--;
+                    break;
+                }
+            }
+            //
+            parent = parentBFS.get(parent);
+        }
+        //
+        return distance;
+    }
 
-    private Map<Vertex, Vertex> bfs(final @NotNull Vertex from)
+    private @NotNull Map<Vertex, Vertex> bfs(final @NotNull Vertex from)
     {
         vertices.forEach(Vertex::clear);
         final @NotNull Map<Vertex, Vertex> parents = new HashMap<>();
@@ -92,7 +186,8 @@ public class FamilyTree
         greyed.add(from);
         while ( !greyed.isEmpty() )
         {
-            final @NotNull Vertex next = greyed.poll();
+            // NOTE: `greyed.poll()` cannot produce null, because at this point `greyed` is guaranteed to have at least one element
+            final @NotNull Vertex next = Objects.requireNonNull(greyed.poll());
             visit(next.getFather(), parents, next, greyed);
             visit(next.getMother(), parents, next, greyed);
             visit(next.getSpouse(), parents, next, greyed);
@@ -127,7 +222,7 @@ public class FamilyTree
         If there is no such vertex, returns null.
         Complexity: O(n)
      */
-    public @Nullable Vertex findVertex(final String firstName, final String lastName)
+    public @Nullable Vertex getVertex(final String firstName, final String lastName)
     {
         return vertices.stream()
             .filter( v ->
@@ -136,10 +231,47 @@ public class FamilyTree
                 final String first  = firstName.toLowerCase();
                 final String vLast  = v.profile().getLastName().toLowerCase();
                 final String last   = lastName.toLowerCase();
-                return vFirst.equals(first) && vLast.equals(last);
+                final boolean result;
+                if (first.isEmpty())
+                {
+                    result = vLast.equals(last);
+                }
+                else if (last.isEmpty())
+                {
+                    result = vFirst.equals(first);
+                }
+                else
+                {
+                    result = vFirst.equals(first) && vLast.equals(last);
+                }
+                //
+                return result;
             })
             .findAny()
             .orElse(null);
+    }
+
+    /*
+        Returns any vertex which has a profile with specified full name.
+        If there is no such vertex, returns null.
+        Complexity: O(n)
+     */
+    public @Nullable Vertex getVertex(final @NotNull String fullName)
+    {
+        final @Nullable Vertex result;
+        final int firstSpaceIndex = fullName.indexOf(' ');
+        if ( firstSpaceIndex == -1 )
+        {
+            result = getVertex(fullName, "");
+        }
+        else
+        {
+            final String firstName = fullName.substring(0, firstSpaceIndex);
+            final String lastName = fullName.substring(firstSpaceIndex + 1, fullName.length());
+            result = getVertex(firstName, lastName);
+        }
+        //
+        return result;
     }
 
 }

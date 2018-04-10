@@ -22,7 +22,7 @@ public class Bond
 
 
 
-    public @NotNull Color getColor()
+    @NotNull Color getColor()
     {
         return secondPerson.getColor();
     }
@@ -96,8 +96,7 @@ public class Bond
     @Override
     public boolean equals(Object obj)
     {
-        return (obj instanceof Bond)
-                && (firstPerson.equals(((Bond) obj).firstPerson))
+        return (obj instanceof Bond) && (firstPerson.equals(((Bond) obj).firstPerson))
                 && (secondPerson.equals(((Bond) obj).secondPerson));
     }
 }

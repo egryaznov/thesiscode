@@ -1,5 +1,7 @@
 package foundation.lisp.types;
 
+import org.jetbrains.annotations.NotNull;
+
 public class TVoid extends TObject<Object>
 {
     public static final TVoid instance = new TVoid();
@@ -9,7 +11,13 @@ public class TVoid extends TObject<Object>
         super(Type.VOID);
     }
 
-    public static boolean isVoid(final String literal)
+    @Override
+    public @NotNull String termToString()
+    {
+        return valueToString();
+    }
+
+    static boolean isVoid(final String literal)
     {
         return literal.equals( Type.VOID.getName() );
     }
