@@ -93,10 +93,10 @@ public class Ontology
     {
         final String queryWed = "SELECT first_spouse_id, second_spouse_id, date_of_wedding FROM wed";
         final String queryBeget = "SELECT * FROM beget";
-        try (final @NotNull Statement stWed = Objects.requireNonNull(Database.instance.getConnection()).createStatement();
-             final @NotNull Statement stBeget = Database.instance.getConnection().createStatement();
-             final @Nullable ResultSet wedTable = stWed.executeQuery(queryWed);
-             final @Nullable ResultSet begetTable = stBeget.executeQuery(queryBeget))
+        try (final @NotNull var stWed = Objects.requireNonNull(Database.instance.getConnection()).createStatement();
+             final @NotNull var stBeget = Database.instance.getConnection().createStatement();
+             final @Nullable var wedTable = stWed.executeQuery(queryWed);
+             final @Nullable var begetTable = stBeget.executeQuery(queryBeget))
         {
             if ((wedTable == null) || (begetTable == null))
             {

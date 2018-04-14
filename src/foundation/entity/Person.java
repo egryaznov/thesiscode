@@ -104,6 +104,28 @@ public class Person
         return lastName;
     }
 
+    public int getAge()
+    {
+        final @NotNull Calendar birthDate = Person.stringToCalendar(dateOfBirth);
+        final int birthDay   = birthDate.get(Calendar.DAY_OF_MONTH);
+        final int curDay     = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+        final int birthMonth = birthDate.get(Calendar.MONTH);
+        final int curMonth   = Calendar.getInstance().get(Calendar.MONTH);
+        final int yearDiff = Calendar.getInstance().get(Calendar.YEAR) - birthDate.get(Calendar.YEAR);
+        final int age;
+        if ( curMonth == birthMonth )
+        {
+            // NOTE: День рождения прошёл если текущий день месяца не больше того, когда он был рождён
+            age = (birthDay >= curDay)? yearDiff : yearDiff - 1;
+        }
+        else
+        {
+            // NOTE: День рождения уже прошёл
+            age = yearDiff;
+        }
+        return age;
+    }
+
     @NotNull Color getColor()
     {
         return (selected)? Person.SELECTED_NODE_COLOR : (male)? Person.MALE_NODE_COLOR : Person.FEMALE_NODE_COLOR;

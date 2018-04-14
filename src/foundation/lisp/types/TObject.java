@@ -90,7 +90,7 @@ public abstract class TObject<T>
         return instanceOf(Type.VOID);
     }
 
-    public static @NotNull TObject<?> parsePrimitive(final String literal) throws InvalidTermException
+    public static @NotNull TObject<?> parsePrimitive(final @NotNull String literal) throws InvalidTermException
     {
         @Nullable TObject<?> result = null;
         for (Type type : Type.values())
@@ -159,9 +159,9 @@ public abstract class TObject<T>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity mismatch: of-type?, expected exactly 2 arguments";
+            return "Arity mismatch: of-type?, expected exactly 2 arguments, but got " + nGivenArgs;
         }
     }
 
@@ -187,9 +187,9 @@ public abstract class TObject<T>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity mismatch: =, expected exactly 2 arguments";
+            return "Arity mismatch: =, expected exactly 2 arguments, but got " + nGivenArgs;
         }
     }
 

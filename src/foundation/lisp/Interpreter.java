@@ -123,7 +123,8 @@ public class Interpreter
                 nextLine = br.readLine();
             }
             // Split the giant concatenated term and execute each axiom
-            final @NotNull List<String> axioms = splitByTerms(terms + ")", false, false);
+            // XXX: Do we need rewriting here?
+            final @NotNull List<String> axioms = splitByTerms(terms + ")", false, false, false);
             for (final String term : axioms)
             {
                 exec(term);
@@ -222,7 +223,7 @@ public class Interpreter
         if ( isDefine(clippedQuery) )
         {
             final @NotNull List<String> terms = splitByTerms(clippedQuery);
-            final String reference = terms.get(1);
+            final @NotNull var reference = terms.get(1);
             // Check the validity of this 'define' `query`
             if ( !isReference(reference) )
             {
@@ -232,25 +233,22 @@ public class Interpreter
             {
                 throw new InvalidTermException("Malformed define query: " + query);
             }
-            if ( atomicFunctions.containsKey(reference) )
-            {
-                throw new InvalidTermException("Cannot redefine an atomic function: " + reference);
-            }
             if ( keywords.containsKey(reference) )
             {
                 throw new InvalidTermException("Cannot redefine a keyword: " + reference);
             }
-            if ( definitions.containsKey(reference) )
-            {
-                throw new InvalidTermException("Cannot redefine previously defined reference: " + reference);
-            }
+            // NOTE: Only one term per reference:
+            definitions.remove(reference);
             final @NotNull String designatum = terms.get(2);
-            definitions.put( reference, eval(designatum).termToString() );
+            final @NotNull TObject<?> evaluatedDesignatum = eval(designatum);
+            definitions.put( reference, evaluatedDesignatum.termToString() );
             result = TVoid.instance;
         }
         else
         {
-            result = eval(rewrite(clippedQuery, definitions));
+            // NOTE: Отменил перезапись до выполнения. Теперь термы перезаписываются прямо во время их вычисления.
+            result = eval(clippedQuery);
+            // result = eval(rewrite(clippedQuery, definitions));
         }
         if (benchmark)
         {
@@ -275,9 +273,10 @@ public class Interpreter
         Evaluates the `term` and returns the result of its' evaluation.
      */
     @SuppressWarnings("unchecked")
-    public @NotNull TObject<?> eval(final String term) throws InterpreterException
+    public @NotNull TObject<?> eval(final @NotNull String rawTerm) throws InterpreterException
     {
         final @NotNull TObject<?> result;
+        final @NotNull String term = definitions.getOrDefault(rawTerm, rawTerm);
         if ( isPrimitive(term) )
         {
             result = TObject.parsePrimitive(term);
@@ -285,6 +284,10 @@ public class Interpreter
         else if ( atomicFunctions.containsKey(term) )
         {
             result = atomicFunctions.get(term);
+        }
+        else if ( evaluatedTerms.containsKey(term) )
+        {
+            result = evaluatedTerms.get(term);
         }
         else if ( isLambda(term) )
         {
@@ -324,30 +327,17 @@ public class Interpreter
         }
         else if ( isFunctionalTerm(term) )
         {
-            if (evaluatedTerms.containsKey(term))
-            {
-                return evaluatedTerms.get(term);
-            }
             // Proceed with evaluation of the new term
             final @NotNull List<String> subTerms = splitByTerms(term);
-            final @NotNull String firstSubTerm = subTerms.get(0);
-            final String leader = definitions.getOrDefault(firstSubTerm, firstSubTerm);
+            final @NotNull String firstSubTerm   = subTerms.get(0);
+            final @NotNull String leader         = definitions.getOrDefault(firstSubTerm, firstSubTerm);
             @NotNull TFunction<TObject, TObject> leaderFunction;
             if ( leader.equals(DEFINE_KEYWORD) )
             {
-                throw new InvalidTermException("Define is not allowed in functional terms");
-            }
-            else if ( isLambda(leader) )
-            {
-                leaderFunction = new Lambda(this, leader);
-            }
-            else if (atomicFunctions.containsKey(leader))
-            {
-                leaderFunction = atomicFunctions.get(leader);
+                throw new InvalidTermException("Define is not allowed inside functional terms");
             }
             else
             {
-                // Для функций высших порядков
                 final @NotNull TObject<?> evaluatedLeader = eval( leader );
                 if ( evaluatedLeader.instanceOf(Type.FUNCTION) )
                 {
@@ -355,47 +345,44 @@ public class Interpreter
                 }
                 else
                 {
-                    throw new InvalidTermException("Expected a function, got: " + evaluatedLeader.valueToString());
+                    throw new InvalidTermException("eval, Expected a function, got: " + evaluatedLeader.valueToString());
                 }
             }
             // We have the function, now we need to evaluate the arguments
-            final int nSubTerms = subTerms.size();
-            if (nSubTerms == 1)
+            // Evaluate arguments one by one recursively
+            final @NotNull List<TObject> args = new LinkedList<>();
+            for (int i = 1; i < subTerms.size(); i++)
             {
-                // Term has no arguments, so just apply in to empty list
-                result = leaderFunction.apply(new LinkedList<>());
+                args.add( eval(subTerms.get(i)) ); // Recursive call!
             }
-            else
-            {
-                // Evaluate arguments one by one recursively
-                final @NotNull List<TObject> args = new LinkedList<>();
-                for (int i = 1; i < nSubTerms; i++)
-                {
-                    args.add( eval(subTerms.get(i)) ); // Recursive call!
-                }
-                // Arguments ready, now let's apply them to the function
-                result = leaderFunction.apply(args);
-            }
-            // Store the evaluated result in the map to speed up computation
-            evaluatedTerms.putIfAbsent(term, result);
+            // Arguments ready, now let's apply them to the function
+            result = leaderFunction.apply(args);
         }
         else
         {
-            throw new InvalidTermException("Unbounded identifier: " + term);
+            throw new InvalidTermException("eval, Unbounded Identifier: " + term);
         }
-        //
+        // Store the evaluated result in the map to speed up computation
+        evaluatedTerms.putIfAbsent(term, result);
         return result;
+    }
+
+    public void expungeCache()
+    {
+        evaluatedTerms.clear();
     }
 
     /*
         Splits a query into a list of its' terms.
         For example, splitByTerms("(+ (+ 1 2) 3 (+ 4 (+ 5 6)) 'a bc')") = ["+", "(+ 1 2)", "3", "(+ 4 (+ 5 6))", "'a bc'"]
      */
-    public @NotNull List<String> splitByTerms(final String query, final boolean isClipped, final boolean benchmark)
+    public @NotNull List<String> splitByTerms(final String query, final boolean isClipped, final boolean needRewriting,
+                                              final boolean benchmark)
     {
         final long time = System.nanoTime();
-        final String clippedTerm = (isClipped)? rewrite(query, definitions) : rewrite(clip(query), definitions);
-        final List<String> result = splitByTerms( clippedTerm ).stream()
+        final @NotNull String clippedTerm   = (isClipped)? query : clip(query);
+        final @NotNull String rewrittenTerm = (needRewriting)? rewrite(clippedTerm, definitions) : clippedTerm;
+        final List<String> result = splitByTerms( rewrittenTerm ).stream()
                 .map(term -> term.replaceAll("_", " "))
                 .collect(Collectors.toList());
         if (benchmark)
@@ -556,7 +543,7 @@ public class Interpreter
 
     /*
         Checks whether the `term` is a reference.
-        A reference is used in a `(define ref term)` query.
+        A reference is used in a `(define reference term)` query.
      */
     private boolean isReference(final String term)
     {

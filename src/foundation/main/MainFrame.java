@@ -14,9 +14,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -47,7 +47,8 @@ public class MainFrame extends JFrame
         graphicsOptions.put(ANIMATION, true);
         initMainMenu();
         this.setTitle(TITLE);
-        this.setResizable(false);
+        // NOTE: Resizable true?
+        this.setResizable(true);
         this.setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
         this.setLocationRelativeTo(null);
         this.addWindowListener(new ClosingWindowListener());
@@ -85,9 +86,9 @@ public class MainFrame extends JFrame
         jmFile.add(new JSeparator());
         jmFile.add(jmiQuit);
         // Set CMD-Key shortcuts to items in 'File' menu
-        jmiNewGenealogy.setAccelerator( KeyStroke.getKeyStroke('N', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) );
-        jmiOpenGenealogy.setAccelerator( KeyStroke.getKeyStroke('O', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) );
-        jmiSaveAll.setAccelerator( KeyStroke.getKeyStroke('S', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) );
+        jmiNewGenealogy.setAccelerator( KeyStroke.getKeyStroke('N', InputEvent.CTRL_DOWN_MASK) );
+        jmiSaveAll.setAccelerator( KeyStroke.getKeyStroke('S', InputEvent.CTRL_DOWN_MASK) );
+        jmiOpenGenealogy.setAccelerator( KeyStroke.getKeyStroke('O', InputEvent.CTRL_DOWN_MASK) );
         // Register File menu listeners
         jmiNewGenealogy.addActionListener(new NewGenealogyMenuListener());
         jmiOpenGenealogy.addActionListener(new OpenGenealogyMenuListener());
@@ -97,7 +98,7 @@ public class MainFrame extends JFrame
         final @NotNull JMenu jmAmi = new JMenu("Virtual Assistant");
         final @NotNull JMenuItem jmiAssistant = new JMenuItem("Open");
         // Set CMD-A shortcut on the "Open VA" item
-        jmiAssistant.setAccelerator( KeyStroke.getKeyStroke('A', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) );
+        jmiAssistant.setAccelerator( KeyStroke.getKeyStroke('A', InputEvent.CTRL_DOWN_MASK) );
         jmAmi.add(jmiAssistant);
         // Register Assistant menu listener
         jmiAssistant.addActionListener(new OpenVirtualAssistant());
@@ -123,8 +124,7 @@ public class MainFrame extends JFrame
         }
         genealogyView = new GenealogyView();
         add(genealogyView);
-        MainFrame.this.pack();
-        this.setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        // MainFrame.this.pack();
         this.setLocationRelativeTo(null);
     }
 

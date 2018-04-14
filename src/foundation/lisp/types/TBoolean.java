@@ -1,5 +1,6 @@
 package foundation.lisp.types;
 
+import foundation.lisp.exceptions.InvalidTermException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -63,7 +64,7 @@ public class TBoolean extends TObject<Boolean>
     }
 
     @SuppressWarnings("unused")
-    static @NotNull TBoolean parseBoolean(final String primitive)
+    static @NotNull TBoolean parseBoolean(final String primitive) throws InvalidTermException
     {
         // NOTE: Why not just use a constructor instead of this method?
         // NOTE: Because we don't want to allow creating instances of this class,
@@ -75,10 +76,8 @@ public class TBoolean extends TObject<Boolean>
             case FALSE_KEYWORD:
                 return FALSE;
             default:
-                // XXX: Everything other from 'true' or 'false' is considered 'false'.
-                // XXX: If we throw an exception here, then we would need to deal with an compile-time error in the class Type.
-                return FALSE;
-                //throw new InvalidTermException("Error: '" + primitive + "' is not a valid boolean primitive," + "should be 'true' or 'false'");
+                // NOTE: Everything other from 'true' or 'false' is considered a lisp-level error.
+                throw new InvalidTermException("Error: '" + primitive + "' is not a valid boolean primitive," + "should be 'true' or 'false'");
         }
     }
 
@@ -123,12 +122,12 @@ public class TBoolean extends TObject<Boolean>
         @Override
         TBoolean call(final @NotNull List<TBoolean> args)
         {
-            assert args.size() > 0 : "Assert: LogicalAND.call, the number of passed arguments is " + args.size() + ", but should be >= 1";
+            // args.size > 0 at this point
             return args.stream().reduce(TBoolean.TRUE, TBoolean::and);
         }
 
         @Override
-        String mismatchMessage()
+        String mismatchMessage(final int nGivenArgs)
         {
             return "Arity mismatch: and, expected at least 1 argument, zero given";
         }
@@ -156,9 +155,9 @@ public class TBoolean extends TObject<Boolean>
         }
 
         @Override
-        String mismatchMessage()
+        String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity mismatch: not, expected exactly one argument";
+            return "Arity mismatch: not, expected exactly one argument, but got " + nGivenArgs;
         }
     }
 
@@ -179,12 +178,12 @@ public class TBoolean extends TObject<Boolean>
         @Override
         TBoolean call(final @NotNull List<TBoolean> args)
         {
-            assert args.size() > 0 : "Assert: LogicalOR.call, the number of passed arguments is " + args.size() + ", but should be >= 1";
+            // args.size > 0 at this point
             return args.stream().reduce(TBoolean.FALSE, TBoolean::or);
         }
 
         @Override
-        String mismatchMessage()
+        String mismatchMessage(final int nGivenArgs)
         {
             return "Arity mismatch: or, expected at least one argument, zero given";
         }

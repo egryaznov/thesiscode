@@ -386,7 +386,7 @@
       "Notes" : "Accepts exactly two arguments."
   },
 
-  "/" :
+  "div" :
   {
       "Name" : "Integer division",
       "Signature" : "(div n m)",

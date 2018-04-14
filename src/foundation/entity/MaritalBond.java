@@ -39,9 +39,9 @@ public class MaritalBond extends Bond
                     (float)camera.scale(2.0f),
                     BasicStroke.CAP_BUTT,
                     BasicStroke.JOIN_MITER,
-                    10.0f,
+                    1.0f,
                     new float[] {10.0f},
-                    view.getAnimationCount()
+                    (view.getAnimationCount() % 10)
             );
             g2d.setStroke( maritalStroke );
             g2d.drawLine(x0, y0, x1, y1);

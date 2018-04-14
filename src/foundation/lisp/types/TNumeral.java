@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class TNumeral extends TObject<Long>
 {
@@ -169,9 +170,9 @@ public class TNumeral extends TObject<Long>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity mismatch: mod, expected exactly two arguments";
+            return "Arity mismatch: mod, expected exactly two arguments, but got " + nGivenArgs;
         }
     }
 
@@ -183,7 +184,7 @@ public class TNumeral extends TObject<Long>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
             return "Arity Mismatch: addition, expected at least one argument, zero given";
         }
@@ -225,9 +226,9 @@ public class TNumeral extends TObject<Long>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity Mismatch: sub, expected exactly 2 arguments";
+            return "Arity Mismatch: sub, expected exactly 2 arguments, but got " + nGivenArgs;
         }
     }
 
@@ -239,7 +240,7 @@ public class TNumeral extends TObject<Long>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
             return "Arity Mismatch: multiplication, expected at least one argument, zero given";
         }
@@ -261,7 +262,7 @@ public class TNumeral extends TObject<Long>
     {
         Division()
         {
-            super("/", "/");
+            super("div", "div");
         }
 
         @Override
@@ -281,9 +282,9 @@ public class TNumeral extends TObject<Long>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity Mismatch: div, expected exactly 2 arguments";
+            return "Arity Mismatch: div, expected exactly 2 arguments, but got " + nGivenArgs;
         }
     }
 
@@ -305,19 +306,19 @@ public class TNumeral extends TObject<Long>
         @Override
         TBoolean call(final @NotNull List<TNumeral> args)
         {
-            assert argsArityMatch( args.size() ) : "Assert, TNumeral.call, arity mismatch: " + args.size();
+            // args.size == 2
             // Returns true iff a <= b
             final @NotNull TNumeral a = args.get(0);
             final @NotNull TNumeral b = args.get(1);
-            assert a.getValue() != null : "Assert, TNumeral.call, a.getValue is null!";
-            assert b.getValue() != null : "Assert, TNumeral.call, b.getValue is null!";
+            Objects.requireNonNull(a.getValue());
+            Objects.requireNonNull(b.getValue());
             return TBoolean.get( a.getValue() <= b.getValue() );
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity mismatch, LessOrEqual: expected 2 arguments";
+            return "Arity mismatch, LessOrEqual: expected 2 arguments, but got " + nGivenArgs;
         }
     }
 
@@ -349,9 +350,9 @@ public class TNumeral extends TObject<Long>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity mismatch, Less: expected 2 arguments";
+            return "Arity mismatch, Less: expected 2 arguments, but got " + nGivenArgs;
         }
     }
 
@@ -383,9 +384,9 @@ public class TNumeral extends TObject<Long>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity mismatch, GreaterOrEqual: expected 2 arguments";
+            return "Arity mismatch, GreaterOrEqual: expected 2 arguments, but got " + nGivenArgs;
         }
     }
 
@@ -417,9 +418,9 @@ public class TNumeral extends TObject<Long>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity mismatch, Greater: expected 2 arguments";
+            return "Arity mismatch, Greater: expected 2 arguments, but got " + nGivenArgs;
         }
     }
 }

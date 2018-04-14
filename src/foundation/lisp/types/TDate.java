@@ -9,11 +9,11 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
-// NOTE: NOW := Calendar.getInstance();
 public class TDate extends TObject<Calendar>
 {
     public static final String DATE_PATTERN = "(0?[1-9]|[1-2]\\d|30|31)\\.(0?[1-9]|1[0-2])\\.[1-2]\\d\\d\\d";
     public static final String NOW_KEYWORD = "now";
+    private static final @NotNull TDate NOW = new TDate(Calendar.getInstance());
 
     TDate(final @NotNull Calendar date)
     {
@@ -49,7 +49,6 @@ public class TDate extends TObject<Calendar>
         assert this.getValue() != null : "Assert: TDate.after, super.value is null";
         assert date.getValue() != null : "Assert: TDate.after, date.value is null";
         // NOTE: (after d1 d2) = (before d2 d1)?
-        // return date.before(this);
         return TBoolean.get(this.getValue().after( date.getValue() ));
     }
 
@@ -83,6 +82,10 @@ public class TDate extends TObject<Calendar>
         // Check whether `rawDate` is a well-formed date type
         if ( isDate(rawDate) )
         {
+            if ( rawDate.equals(NOW_KEYWORD) )
+            {
+                return NOW;
+            }
             return new TDate(rawDate);
         }
         else
@@ -136,9 +139,9 @@ public class TDate extends TObject<Calendar>
         }
 
         @Override
-        String mismatchMessage()
+        String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity mismatch: during, expected 3 arguments";
+            return "Arity mismatch: during, expected exactly 3 arguments, but " + nGivenArgs + " given.";
         }
     }
 
@@ -165,9 +168,9 @@ public class TDate extends TObject<Calendar>
         }
 
         @Override
-        String mismatchMessage()
+        String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity mismatch: before, expected 2 arguments";
+            return "Arity mismatch: before, expected exactly 2 arguments, but got " + nGivenArgs;
         }
     }
 
@@ -195,9 +198,9 @@ public class TDate extends TObject<Calendar>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity mismatch: after, expected 2 arguments";
+            return "Arity mismatch: after, expected exactly 2 arguments, but got " + nGivenArgs;
         }
     }
 
@@ -225,9 +228,9 @@ public class TDate extends TObject<Calendar>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity mismatch: date, expected 1 argument";
+            return "Arity mismatch: date, expected exactly one argument, but got " + nGivenArgs;
         }
     }
 }

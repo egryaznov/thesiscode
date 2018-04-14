@@ -21,7 +21,7 @@ public abstract class TFunction<T, R> extends TObject<String>
 
     abstract @NotNull R call(final @NotNull List<T> args) throws InterpreterException;
 
-    abstract String mismatchMessage();
+    abstract String mismatchMessage(final int nGivenArgs);
 
     public @NotNull R apply(final @NotNull List<T> args) throws InterpreterException
     {
@@ -34,12 +34,12 @@ public abstract class TFunction<T, R> extends TObject<String>
             }
             catch (final ClassCastException e)
             {
-                throw new InvalidTermException( parseCastErrorMessage(e.getMessage()) + " in argument list: " + args);
+                throw new InvalidTermException( name + "; " + parseCastErrorMessage(e.getMessage()) + " in argument list: " + args);
             }
         }
         else
         {
-            throw new InvalidTermException(mismatchMessage());
+            throw new InvalidTermException(mismatchMessage(args.size()));
         }
         //
         return result;

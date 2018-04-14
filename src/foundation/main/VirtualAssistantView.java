@@ -153,7 +153,7 @@ public class VirtualAssistantView extends JFrame
         echo(text, true);
     }
 
-    private void echo(final String text, final boolean fromAmi)
+    private void echo(final @NotNull String text, final boolean fromAmi)
     {
         final String msg = String.format("   [%s]: %s", (fromAmi)? VA_NAME : "YOU", text);
         if ( !fromAmi )
@@ -168,7 +168,7 @@ public class VirtualAssistantView extends JFrame
         }
     }
 
-    private void respond(final String userMessage)
+    private void respond(final @NotNull String userMessage)
     {
         if (userMessage.isEmpty())
         {
@@ -202,7 +202,7 @@ public class VirtualAssistantView extends JFrame
 
 
 
-    private void processQuestion(final String question)
+    private void processQuestion(final @NotNull String question)
     {
         // question is already lowercased and all punctuation is removed from it
         // After splitting, `words` is guaranteed to have at least one item
@@ -211,20 +211,62 @@ public class VirtualAssistantView extends JFrame
         switch (words[0])
         {
             case "how" :
-            {
                 howQuestion(words);
                 break;
-            }
             case "who" :
-            {
                 whoQuestion(words);
                 break;
-            }
+            case "where" :
+                whereQuestion(words);
+                break;
             default:
-            {
                 unknownMessage(true);
                 break;
+        }
+    }
+
+    private void whereQuestion(final @NotNull String[] words)
+    {
+        // where <reference> (was | were) born
+        //   0       1..N    wasWereIndex
+        if ( words.length < 4 )
+        {
+            unknownMessage(true);
+            return;
+        }
+        // Find the end of <reference>
+        final int wasIndex = Arrays.asList(words).indexOf("was");
+        final int wereIndex = Arrays.asList(words).indexOf("were");
+        final int wasWereIndex = ( wasIndex == -1 )? wereIndex : wasIndex;
+        if ( wasWereIndex == -1 )
+        {
+            unknownMessage(true);
+            return;
+        }
+        //
+        final @Nullable List<Vertex> reference = parseReference(words, 1, wasWereIndex - 1);
+        if ( reference == null )
+        {
+            egoUnknown();
+            return;
+        }
+        if ( reference.isEmpty() )
+        {
+            emptyReference(words, 1, wasWereIndex);
+            return;
+        }
+        //
+        for ( Vertex person : reference )
+        {
+            final @NotNull String birthplace = person.profile().getOccupation();
+            if ( birthplace.isEmpty() )
+            {
+                continue;
             }
+            final @NotNull String firstName = person.profile().getFirstName();
+            final @NotNull String lastName  = person.profile().getLastName();
+            final @NotNull String response  = String.format("%s %s was born in %s.", firstName, lastName, birthplace);
+            echo(response);
         }
     }
 
@@ -285,6 +327,11 @@ public class VirtualAssistantView extends JFrame
             final @NotNull List<String> toKinFrom = KinshipDictionary.instance.shorten( in.ontology().tree().kinship(to, from) );
             final @NotNull String prefix = (from.equals(ego))? "You are " :  from.profile().getFirstName() + " " + from.profile().getLastName() + " is a ";
             final @NotNull String ending = (to.equals(ego))? " of you" : " of " + to.profile().getFirstName() + " " + to.profile().getLastName();
+            if ( toKinFrom.isEmpty() )
+            {
+                echo(String.format("%s and %s are not related.", prefix, ending));
+                continue;
+            }
             final @NotNull String message = toKinFrom.stream().collect(Collectors.joining(" of a ", prefix, ending));
             echo(message);
         }
@@ -434,7 +481,22 @@ public class VirtualAssistantView extends JFrame
             {
                 // <full name>
                 final @NotNull String firstName = refWords[startInc];
-                final @NotNull String lastName = refWords[endInc]; // NOTE: Long names are not supported!
+                // Construct long last name
+                final @NotNull var longNameBuilder = new StringBuilder();
+                for (int i = startInc + 1; i <= endInc; i++)
+                {
+                    longNameBuilder.append(refWords[i]);
+                    longNameBuilder.append(" ");
+                }
+                final int  lastIndex = longNameBuilder.length() - 1;
+                final char lastChar = longNameBuilder.charAt( lastIndex );
+                if ( lastChar == ' ' )
+                {
+                    // Remove trailing space
+                    longNameBuilder.deleteCharAt( lastIndex );
+                }
+                final @NotNull String lastName = longNameBuilder.toString(); // NOTE: Long names are now supported!
+                // Search for a relative
                 result = new LinkedList<>();
                 final @Nullable Vertex foundRelative = tree.getVertex(firstName, lastName);
                 if ( foundRelative != null )
@@ -445,7 +507,7 @@ public class VirtualAssistantView extends JFrame
                 break;
             }
         }
-        // return only distinct element
+        // return only distinct elements
         return (result == null)? null : result.stream().distinct().collect(Collectors.toList());
     }
 
@@ -543,7 +605,6 @@ public class VirtualAssistantView extends JFrame
         {
             case "i" :
             case "i'm" :
-            {
                 final @NotNull String egoFirstName = words[1];
                 final @NotNull String egoLastName = words[2];
                 final @Nullable Vertex v = in.ontology().tree().getVertex(egoFirstName, egoLastName);
@@ -557,64 +618,34 @@ public class VirtualAssistantView extends JFrame
                     echo( String.format("Nice to meet you, %s %s.", egoFirstName, egoLastName) );
                 }
                 break;
-            }
-            case "load" :
-            {
-                if (words.length < 2)
-                {
-                    echo("Please specify the name of a lisp file you're trying to load.");
-                }
-                else
-                {
-                    final @NotNull File axioms = new File(words[1]);
-                    if (axioms.exists())
-                    {
-                        try
-                        {
-                            in.exec(axioms);
-                            echo("Successfully loaded.");
-                        }
-                        catch (final InterpreterException e)
-                        {
-                            echo(e.getMessage());
-                        }
-                    }
-                    else
-                    {
-                        echo(String.format("File %s does not exist.", words[1]));
-                    }
-                }
-                //
+            case "benchmark" :
+                final long millis = in.lastBenchmark() / 1000000;
+                echo(String.format("%d ms.", millis));
                 break;
-            }
+            case "flush" :
+                in.expungeCache();
+                echo("Table of cached evaluated terms has been cleaned.");
+                break;
+            case "load" :
+                loadCommand(words);
+                break;
             case "clear" :
-            {
                 outputArea.setText("");
                 break;
-            }
             case "hide" :
-            {
                 genealogyView.requestFocus();
                 setVisible(false);
                 break;
-            }
             case "show" :
-            {
                 showCommand(words);
                 break;
-            }
             case "print" :
-            {
                 printCommand(words);
                 break;
-            }
             case "help" :
-            {
                 helpCommand(words);
                 break;
-            }
             case "commands" :
-            {
                 echo("Here's the list of all available commands:");
                 echo("Everything inside squared brackets '[]' is optional");
                 echo("1. Show [me] <reference>.");
@@ -624,9 +655,7 @@ public class VirtualAssistantView extends JFrame
                 echo("5. 'load <lisp-file-name>'. Read a lisp file from disk and evaluates its content.");
                 echo("6. 'hide'. Conceals this window.");
                 break;
-            }
             case "questions":
-            {
                 echo("Here's the list of all questions that I can answer:");
                 echo("The question mark '?' at the end is required.");
                 echo("1. How is <reference> related to <reference>?");
@@ -644,11 +673,36 @@ public class VirtualAssistantView extends JFrame
                 echo("6. myself");
                 echo("And '<kinship-term>' is either a father, or a sister, or an uncle and so on...");
                 break;
-            }
             default:
-            {
                 echo("I'm sorry, I cannot understand your English command. Please reformulate and try again.");
                 break;
+        }
+    }
+
+    private void loadCommand(final @NotNull String[] words)
+    {
+        if (words.length < 2)
+        {
+            echo("Please specify the name of a lisp file you're trying to load.");
+        }
+        else
+        {
+            final @NotNull File axioms = new File(words[1]);
+            if (axioms.exists())
+            {
+                try
+                {
+                    in.exec(axioms);
+                    echo("Successfully loaded.");
+                }
+                catch (final InterpreterException e)
+                {
+                    echo(e.getMessage());
+                }
+            }
+            else
+            {
+                echo(String.format("File %s does not exist.", words[1]));
             }
         }
     }
@@ -1009,21 +1063,18 @@ public class VirtualAssistantView extends JFrame
             switch (typedChar)
             {
                 case '\r' :
-                {
                     if ( e.isControlDown() )
                     {
                         respond(inputField.getText());
                         inputField.setText("");
                     }
                     break;
-                }
                 case '\u000B' :
-                {
                     if ( e.isControlDown() )
                     {
                         inputField.setText(lastMessage);
                     }
-                }
+                    break;
             }
         }
     }

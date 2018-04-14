@@ -26,7 +26,8 @@ public class Lambda extends TFunction<TObject, TObject>
     {
         super("$lambda" + nextID(), lambdaTerm);
         this.in = in;
-        final @NotNull List<String> terms = in.splitByTerms(lambdaTerm, true, false);
+        // XXX: Do we need rewriting here?
+        final @NotNull List<String> terms = in.splitByTerms(lambdaTerm, true, false, false);
         if (terms.size() == 3)
         {
             final String paramsTerm = terms.get(1);
@@ -56,9 +57,13 @@ public class Lambda extends TFunction<TObject, TObject>
     }
 
     @Override
-    String mismatchMessage()
+    @NotNull String mismatchMessage(final int nGivenArgs)
     {
-        return "Arity mismatch: lambda, expected " + paramAliases.size() + " arguments";
+        final @NotNull var msg = String.format("Arity Mismatch: lambda term, %s, expected %d arguments, but got %d",
+                funcTerm,
+                paramAliases.size(),
+                nGivenArgs);
+        return msg;
     }
 
     @Override
@@ -91,9 +96,6 @@ public class Lambda extends TFunction<TObject, TObject>
     {
         // We guarantee that args.size() == paramAliases.size() at this point
         assert args.size() == paramAliases.size() : "Assert: The number of arguments passed to the lambda " + funcTerm + " is not the same as the number of declared arguments";
-        // System.out.println("Evaluating lambda: " + funcTerm);
-        // System.out.println(paramAliases);
-        // System.out.println(args);
         final @NotNull Map<String, String> aliasToArg = new HashMap<>();
         for (int i = 0; i < args.size(); i++)
         {

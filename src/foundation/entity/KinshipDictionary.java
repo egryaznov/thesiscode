@@ -25,28 +25,28 @@ import java.util.stream.Collectors;
 
 /*
     Format:
-    {
+    json: {
         "term,term,...,term" : "kinship",
         "term,term,...,term" : "kinship",
         ...
         "term,term,...,term" : "kinship"
-    }
+        }
  */
 public class KinshipDictionary
 {
     private static final @NotNull String DELIMITER = ",";
-    private final @NotNull String jsonFileName = "res/kinship-dict.json";
+    private static final @NotNull String JSON_FILE_NAME = "res/kinship-dict.json";
     private final @NotNull JSONObject jsonDict;
     private final @NotNull Map<List<String>, String> kinDict = new HashMap<>();
     public static final @NotNull KinshipDictionary instance = new KinshipDictionary();
 
     private KinshipDictionary()
     {
-        final @Nullable InputStream jarIn = getClass().getResourceAsStream("/" + jsonFileName);
-        final @NotNull File jsonFile = new File(jsonFileName);
+        final @Nullable InputStream jarIn = getClass().getResourceAsStream("/" + JSON_FILE_NAME);
+        final @NotNull File jsonFile = new File(JSON_FILE_NAME);
         if ( jarIn == null )
         {
-            System.out.println("Cannot find kinship dict in jar, trying to find it in: " + jsonFileName);
+            System.out.println("Cannot find kinship dict in jar, trying to find it in: " + JSON_FILE_NAME);
             if ( !jsonFile.exists() )
             {
                 System.out.println("There is no .json either! Kinship dictionary will be empty!");
@@ -186,22 +186,15 @@ public class KinshipDictionary
             switch (term)
             {
                 case "parent" :
-                {
                     concatTwoTerms(keys, "mother", "father");
                     break;
-                }
                 case "child" :
-                {
                     concatTwoTerms(keys, "son", "daughter");
                     break;
-                }
                 case "spouse" :
-                {
                     concatTwoTerms(keys, "husband", "wife");
                     break;
-                }
                 default :
-                {
                     // NOTE: Cannot replace this with "foreach" because we MODIFY the collection "keys" here
                     //noinspection ForLoopReplaceableByForEach
                     for (int i = 0; i < keys.size(); i++)
@@ -209,7 +202,6 @@ public class KinshipDictionary
                         keys.get(i).add(term);
                     }
                     break;
-                }
             }
         }
         // Insert all (key, value) pairs
@@ -218,7 +210,7 @@ public class KinshipDictionary
 
     public void saveToFile()
     {
-        final @NotNull File dict = new File(jsonFileName);
+        final @NotNull File dict = new File(JSON_FILE_NAME);
         try (final @NotNull BufferedWriter out = new BufferedWriter(new FileWriter( dict )))
         {
             jsonDict.writeJSONString(out);

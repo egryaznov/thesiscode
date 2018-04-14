@@ -389,6 +389,10 @@ public class GenealogyView extends JPanel
             if ( MainFrame.graphicsOptions.get(MainFrame.ANIMATION) )
             {
                 animationCount += 1;
+                if (animationCount == Integer.MAX_VALUE)
+                {
+                    animationCount = 0;
+                }
                 repaint();
             }
         }

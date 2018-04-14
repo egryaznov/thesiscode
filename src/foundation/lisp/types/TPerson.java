@@ -1,7 +1,6 @@
 package foundation.lisp.types;
 
 import foundation.entity.KinshipDictionary;
-import foundation.entity.Person;
 import foundation.entity.Vertex;
 import foundation.lisp.Interpreter;
 import foundation.lisp.exceptions.InvalidTermException;
@@ -19,7 +18,7 @@ import java.util.stream.Collectors;
 public class TPerson extends TObject<Vertex>
 {
     private static @Nullable Interpreter in;
-    public final static String PEOPLE_KEYWORD = "people";
+    public static final String PEOPLE_KEYWORD = "people";
 
     private TPerson(final @NotNull Vertex v)
     {
@@ -108,85 +107,51 @@ public class TPerson extends TObject<Vertex>
         switch (lowercase)
         {
             case "first name" :
-            {
                 result = new TString( v.profile().getFirstName(), false );
                 break;
-            }
-            case "second name" : // NOTE: Will do the same as the "last name" case
+            case "second name" :
             case "last name" :
-            {
                 result = new TString( v.profile().getLastName(), false );
                 break;
-            }
             case "full name" :
-            {
                 result = new TString( v.profile().getFirstName() + " " + v.profile().getLastName(), false );
                 break;
-            }
             case "age" :
-            {
-                final @NotNull Calendar birthDate = Person.stringToCalendar( v.profile().getDateOfBirth() );
-                final @NotNull Calendar now       = Calendar.getInstance();
-                final int currentYear = now.get(Calendar.YEAR);
-                final int birthYear   = birthDate.get(Calendar.YEAR);
-                return new TNumeral(currentYear - birthYear);
-            }
-            case "birth date" :    // NOTE: Identical to the "birth" case
-            case "date of birth" : // NOTE: Identical to the "birth" case
+                result = new TNumeral( v.profile().getAge() );
+                break;
+            case "birth date" :
+            case "date of birth" :
             case "birth" :
-            {
                 result = TDate.parseDate( v.profile().getDateOfBirth() );
                 break;
-            }
-            case "gender" : // NOTE: Identical to the "sex" case
             case "sex" :
-            {
-                // NOTE: Either "MALE" or "FEMALE"!
+                // NOTE: Either "male" or "female"!
                 result = new TString( v.profile().getSex().toLowerCase(), false );
                 break;
-            }
-            case "occupation" :
-            {
+            case "birthplace" :
                 result = new TString( v.profile().getOccupation(), false );
                 break;
-            }
-            case "phone" :         // NOTE: Identical to the "tel" case
-            case "phone number" :  // NOTE: Identical to the "tel" case
+            case "phone" :
+            case "phone number" :
             case "tel" :
-            {
                 result = new TString( v.profile().getPhone(), false );
                 break;
-            }
-            case "email" : // NOTE: Identical to the "e-mail" case
+            case "email" :
             case "e-mail" :
-            {
                 result = new TString( v.profile().getEmail(), false );
                 break;
-            }
             case "date of wedding" :
             case "wedding date" :
             case "wedding" :
             case "marriage date" :
             case "date of marriage" :
             case "marriage" :
-            {
-                assert in != null : "Assert: TPerson.getAttribute(), Interpreter is not set up";
                 final @Nullable Calendar weddingDate = v.getWeddingDate();
-                if ( weddingDate == null )
-                {
-                    result = TVoid.instance;
-                }
-                else
-                {
-                    result = new TDate( weddingDate );
-                }
+                result = ( weddingDate == null )? TVoid.instance : new TDate( weddingDate );
                 break;
-            }
-            default:
-            {
+            default :
                 result = TVoid.instance;
                 break;
-            }
         }
         //
         return result;
@@ -285,9 +250,9 @@ public class TPerson extends TObject<Vertex>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity mismatch: gen-dist, expected exactly two arguments";
+            return "Arity mismatch: gen-dist, expected exactly two arguments, but got " + nGivenArgs;
         }
     }
 
@@ -315,9 +280,9 @@ public class TPerson extends TObject<Vertex>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity Mismatch: kinship, expected exactly 2 arguments";
+            return "Arity Mismatch: kinship, expected exactly 2 arguments, but got " + nGivenArgs;
         }
     }
 
@@ -361,9 +326,9 @@ public class TPerson extends TObject<Vertex>
         }
 
         @Override
-        @NotNull String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity Mismatch: person, expected either one or two arguments";
+            return "Arity Mismatch: person, expected either one or two arguments, but got " + nGivenArgs;
         }
     }
 
@@ -394,9 +359,9 @@ public class TPerson extends TObject<Vertex>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity mismatch: attr, expected 2 arguments";
+            return "Arity mismatch: attr, expected 2 arguments, but got " + nGivenArgs;
         }
     }
 
@@ -467,9 +432,9 @@ public class TPerson extends TObject<Vertex>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity Mismatch: father, expected exactly one argument";
+            return "Arity Mismatch: father, expected exactly one argument, but got " + nGivenArgs;
         }
     }
 
@@ -540,9 +505,9 @@ public class TPerson extends TObject<Vertex>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity Mismatch: mother, expected exactly one argument";
+            return "Arity Mismatch: mother, expected exactly one argument, but got " + nGivenArgs;
         }
     }
 
@@ -613,9 +578,9 @@ public class TPerson extends TObject<Vertex>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity Mismatch: spouse, expected exactly one argument";
+            return "Arity Mismatch: spouse, expected exactly one argument, but got " + nGivenArgs;
         }
     }
 
@@ -678,9 +643,9 @@ public class TPerson extends TObject<Vertex>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity Mismatch: children, expected exactly one argument";
+            return "Arity Mismatch: children, expected exactly one argument, but got " + nGivenArgs;
         }
     }
 
@@ -702,7 +667,7 @@ public class TPerson extends TObject<Vertex>
         @Override
         TList call(final @NotNull List<TList> args)
         {
-            // args.size() == 1;
+            // args.size is 1
             final @NotNull TList firstArg = args.get(0);
             assert firstArg.getValue() != null : "Assert: TPerson.shortenKinshipTerm, term.value is null!";
             final @NotNull List<String> kinship = firstArg.getValue().stream()
@@ -716,9 +681,9 @@ public class TPerson extends TObject<Vertex>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity Mismatch: shorten, expected exactly one argument";
+            return "Arity Mismatch: shorten, expected exactly one argument, but got " + nGivenArgs;
         }
     }
 
@@ -740,7 +705,7 @@ public class TPerson extends TObject<Vertex>
         @Override
         TVoid call(final @NotNull List<TString> args)
         {
-            // args.size() == 2;
+            // args.size is 2
             final @NotNull TString longKinshipTerm = args.get(0);
             assert longKinshipTerm.getValue() != null : "Assert: put-kinship-term, long.value is null!";
             final @NotNull TString shortKinshipTerm = args.get(1);
@@ -753,9 +718,9 @@ public class TPerson extends TObject<Vertex>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity Mismatch: put-kinship-term, expected exactly 2 arguments";
+            return "Arity Mismatch: put-kinship-term, expected exactly 2 arguments, but got " + nGivenArgs;
         }
     }
 

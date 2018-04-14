@@ -3,10 +3,10 @@ package foundation.lisp.types;
 import foundation.lisp.exceptions.InterpreterException;
 import foundation.lisp.exceptions.InvalidTermException;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -107,6 +107,46 @@ public class TList extends TObject<List<TObject<?>>>
         return new TNumeral( getValue().size() );
     }
 
+    private @NotNull TList map(final @NotNull TFunction<TObject<?>, TObject<?>> binaryMapping,
+                               final @NotNull TList secondArgToMapping) throws InterpreterException
+    {
+        assert this.getValue()               != null : "Assert: TList.map, this.value is null!";
+        assert secondArgToMapping.getValue() != null : "Assert: TList.map, second.value is null!";
+        final @NotNull var firstList  = getValue();
+        final @NotNull var secondList = secondArgToMapping.getValue();
+        final          int minLength  = ( firstList.size() <= secondList.size() )? firstList.size() : secondList.size();
+        if ( minLength == 0 )
+        {
+            return EMPTY_LIST;
+        }
+        //
+        final var mappedList = new LinkedList<TObject<?>>();
+        for (int i = 0; i < minLength; i++)
+        {
+            final @NotNull var twoArgs = List.of( firstList.get(i), secondList.get(i) );
+            mappedList.add( binaryMapping.apply(twoArgs) );
+        }
+        //
+        return new TList( mappedList );
+    }
+
+    private @NotNull TList map(final @NotNull TFunction<TObject<?>, TObject<?>> func) throws InterpreterException
+    {
+        assert this.getValue() != null : "Assert: TList.map, this.value is null!";
+        final @NotNull var items = getValue();
+        if ( items.isEmpty() )
+        {
+            return EMPTY_LIST;
+        }
+        // items not null and not empty
+        final @NotNull var mappedItems = new LinkedList<TObject<?>>();
+        for (var item : items)
+        {
+            mappedItems.add( func.apply(Collections.singletonList(item)) );
+        }
+        return new TList(mappedItems);
+    }
+
     private @NotNull TList filter(final @NotNull TFunction<TObject<?>, TObject<?>> predicate) throws InterpreterException
     {
         assert getValue() != null : "Assert: TList.filter, super.value is null";
@@ -138,16 +178,23 @@ public class TList extends TObject<List<TObject<?>>>
     @Override
     public @NotNull String termToString()
     {
-        final @Nullable List<TObject<?>> items = getValue();
-        if ( items == null )
+        assert getValue() != null : "Assert: TList.termToString, value is null!";
+        final @NotNull List<TObject<?>> items = getValue();
+        //
+        final @NotNull String result;
+        if ( items.isEmpty() )
         {
-            return TVoid.instance.valueToString();
+            result = EMPTY_LIST_KEYWORD;
+        }
+        else
+        {
+            final @NotNull String tokens = items.stream()
+                    .map(TObject::termToString)
+                    .collect(Collectors.joining(" "));
+            result = String.format("(list %s)", tokens);
         }
         //
-        final @NotNull String tokens = items.stream()
-                .map(TObject::termToString)
-                .collect(Collectors.joining(" "));
-        return String.format("(list %s)", tokens);
+        return result;
     }
 
     public static void registerAtomicFunctions(final @NotNull Map<String, TFunction> dict)
@@ -175,6 +222,9 @@ public class TList extends TObject<List<TObject<?>>>
         //
         final @NotNull Tail tail = new Tail();
         dict.put(tail.getName(), tail);
+        //
+        final @NotNull var mapping = new Mapping();
+        dict.put(mapping.getName(), mapping);
     }
 
 
@@ -200,7 +250,7 @@ public class TList extends TObject<List<TObject<?>>>
         }
 
         @Override
-        String mismatchMessage()
+        String mismatchMessage(final int nGivenArgs)
         {
             return "Arity Mismatch: list, expected at least 1 argument, zero given";
         }
@@ -234,9 +284,9 @@ public class TList extends TObject<List<TObject<?>>>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity Mismatch: count, expected exactly one argument";
+            return "Arity Mismatch: count, expected exactly one argument, but got " + nGivenArgs;
         }
     }
 
@@ -278,9 +328,9 @@ public class TList extends TObject<List<TObject<?>>>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity Mismatch: filter, expected exactly two arguments";
+            return "Arity Mismatch: filter, expected exactly two arguments, but got " + nGivenArgs;
         }
     }
 
@@ -321,7 +371,7 @@ public class TList extends TObject<List<TObject<?>>>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
             return "Arity Mismatch: at, expected exactly two arguments";
         }
@@ -349,9 +399,9 @@ public class TList extends TObject<List<TObject<?>>>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity Mismatch: join, expected at least 1 argument.";
+            return "Arity Mismatch: join, expected at least 1 argument, but got " + nGivenArgs;
         }
     }
 
@@ -391,9 +441,9 @@ public class TList extends TObject<List<TObject<?>>>
         }
 
         @Override
-        String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity Mismatch: append, expected at least 2 arguments.";
+            return "Arity Mismatch: append, expected at least 2 arguments, but got " + nGivenArgs;
         }
     }
 
@@ -422,9 +472,9 @@ public class TList extends TObject<List<TObject<?>>>
         }
 
         @Override
-        @NotNull String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity Mismatch: head, expected exactly one argument";
+            return "Arity Mismatch: head, expected exactly one argument, but got " + nGivenArgs;
         }
     }
 
@@ -453,9 +503,49 @@ public class TList extends TObject<List<TObject<?>>>
         }
 
         @Override
-        @NotNull String mismatchMessage()
+        @NotNull String mismatchMessage(final int nGivenArgs)
         {
-            return "Arity Mismatch: tail, expected exactly one argument.";
+            return "Arity Mismatch: tail, expected exactly one argument, but got " + nGivenArgs;
+        }
+    }
+
+    private static class Mapping extends TFunction<TObject<?>, TList>
+    {
+
+        Mapping()
+        {
+            super("map", "map");
+        }
+
+
+        @Override
+        boolean argsArityMatch(int argsCount)
+        {
+            return (argsCount == 2) || (argsCount == 3);
+        }
+
+        @NotNull
+        @Override
+        TList call(final @NotNull List<TObject<?>> args) throws InterpreterException
+        {
+            // args.size is 2 or 3
+            final @NotNull var mapping = (TFunction<TObject<?>, TObject<?>>)args.get(0);
+            final @NotNull var firstList = (TList)args.get(1);
+            if ( args.size() == 3 )
+            {
+                final @NotNull var secondList = (TList)args.get(2);
+                return firstList.map(mapping, secondList);
+            }
+            else
+            {
+                return firstList.map(mapping);
+            }
+        }
+
+        @Override
+        @NotNull String mismatchMessage(final int nGivenArgs)
+        {
+            return "Arity Mismatch: map, expected 2 or 3 arguments, but got " + nGivenArgs;
         }
     }
 

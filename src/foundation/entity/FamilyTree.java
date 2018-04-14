@@ -97,14 +97,14 @@ public class FamilyTree
     {
         final @NotNull Map<Vertex, Vertex> parents = bfs(from);
         @Nullable Vertex prev = to;
-        final @NotNull List<String> terms = new ArrayList<>();
+        final @NotNull List<String> result = new ArrayList<>();
         while ( parents.get(prev) != null )
         {
-            terms.add( basicKinTerm(prev, parents.get(prev)) );
+            result.add( basicKinTerm(prev, parents.get(prev)) );
             prev = parents.get(prev);
         }
         //
-        return terms;
+        return result;
     }
 
     /*
