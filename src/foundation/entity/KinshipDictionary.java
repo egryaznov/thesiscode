@@ -148,13 +148,13 @@ public class KinshipDictionary
         {
             // We successfully shortened `kinship`. Time to return it
             result = new LinkedList<>();
-            // Extract left part
+            // Extract and shorten the left part
             final @NotNull List<String> leftPart = shorten( kinship.subList(0, maxShortcut[0]) );
             result.addAll(leftPart);
             // Shorten the candidate
             final @NotNull String shortcut = kinDict.get( kinship.subList(maxShortcut[0], maxShortcut[1] + 1) );
             result.add(shortcut);
-            // Extract right part
+            // Extract and shorten the right part
             final @NotNull List<String> rightPart = shorten( kinship.subList(maxShortcut[1] + 1, kinLen) );
             result.addAll(rightPart);
         }

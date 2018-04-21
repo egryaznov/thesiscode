@@ -36,6 +36,7 @@ public class Interpreter
     private final static String IF_KEYWORD     = "if";
     private final @NotNull Ontology ontology;
     private long lastBenchmark;
+    private boolean isCachingEnabled = true;
 
     private final @NotNull Map<String, Boolean> keywords = new HashMap<>();
     /*
@@ -49,7 +50,7 @@ public class Interpreter
     /*
         Stores the result of previously evaluated subterms to speed up computation of the main term.
      */
-    private final @NotNull Map<String, TObject> evaluatedTerms = new HashMap<>();
+    private final @NotNull Map<String, TObject> cachedTerms = new HashMap<>();
 
     public Interpreter(final @NotNull Ontology ontology)
     {
@@ -60,6 +61,16 @@ public class Interpreter
     }
 
 
+
+    public void enableCaching()
+    {
+        this.isCachingEnabled = true;
+    }
+
+    public void disableCaching()
+    {
+        this.isCachingEnabled = false;
+    }
 
     private void initKeywords()
     {
@@ -285,9 +296,9 @@ public class Interpreter
         {
             result = atomicFunctions.get(term);
         }
-        else if ( evaluatedTerms.containsKey(term) )
+        else if ( isCachingEnabled && cachedTerms.containsKey(term) )
         {
-            result = evaluatedTerms.get(term);
+            result = cachedTerms.get(term);
         }
         else if ( isLambda(term) )
         {
@@ -363,13 +374,16 @@ public class Interpreter
             throw new InvalidTermException("eval, Unbounded Identifier: " + term);
         }
         // Store the evaluated result in the map to speed up computation
-        evaluatedTerms.putIfAbsent(term, result);
+        if ( isCachingEnabled )
+        {
+            cachedTerms.putIfAbsent(term, result);
+        }
         return result;
     }
 
     public void expungeCache()
     {
-        evaluatedTerms.clear();
+        cachedTerms.clear();
     }
 
     /*

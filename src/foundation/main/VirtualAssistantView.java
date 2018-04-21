@@ -592,7 +592,7 @@ public class VirtualAssistantView extends JFrame
 
 
 
-    private void processCommand(final String command)
+    private void processCommand(final @NotNull String command)
     {
         if (command.isEmpty())
         {
@@ -617,6 +617,9 @@ public class VirtualAssistantView extends JFrame
                     this.ego = v;
                     echo( String.format("Nice to meet you, %s %s.", egoFirstName, egoLastName) );
                 }
+                break;
+            case "set" :
+                setCommand(words);
                 break;
             case "benchmark" :
                 final long millis = in.lastBenchmark() / 1000000;
@@ -675,6 +678,33 @@ public class VirtualAssistantView extends JFrame
                 break;
             default:
                 echo("I'm sorry, I cannot understand your English command. Please reformulate and try again.");
+                break;
+        }
+    }
+
+    private void setCommand(final @NotNull String[] words)
+    {
+        // words is ensured to be non-empty by the caller method "processCommand"
+        if ( words.length < 2 )
+        {
+            echo("'Set' command: no option was specified.");
+            return;
+        }
+        final @NotNull String option = words[1];
+        switch (option)
+        {
+            case "cache" :
+            case "caching" :
+                in.enableCaching();
+                echo("Term caching enabled.");
+                break;
+            case "nocache" :
+            case "nocaching" :
+                in.disableCaching();
+                echo("Term caching disabled.");
+                break;
+            default :
+                echo(String.format("'Set' command: unknown option '%s'", option));
                 break;
         }
     }
