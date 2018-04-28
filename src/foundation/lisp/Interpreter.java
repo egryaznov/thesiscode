@@ -80,6 +80,7 @@ public class Interpreter
         keywords.put(TPerson.PEOPLE_KEYWORD, true);
         keywords.put(TBoolean.TRUE_KEYWORD, true);
         keywords.put(TBoolean.FALSE_KEYWORD, true);
+        keywords.put(TList.EMPTY_LIST_KEYWORD, true);
         keywords.put(Type.VOID.getName(), true);
         keywords.put(TDate.NOW_KEYWORD, true);
     }

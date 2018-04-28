@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 public enum Type
 {
     // XXX: Может нам вообще не нужно это перечисление и его можно слить с классом TObject?
-    // XXX: Я его создал только чтобы обойти проблему нелегальности абстрактных статических методов.
+    // XXX: Я его создал только для того, чтобы обойти проблему нелегальности абстрактных статических методов.
     // NOTE: Пока что полностью избавиться от этого класса не получается, слишком много рефакторинга.
     @NotNull BOOLEAN("boolean", TBoolean::isBoolean, TBoolean::parseBoolean, true),
     @NotNull NUMERAL("numeral", TNumeral::isNumeral, TNumeral::new, true),

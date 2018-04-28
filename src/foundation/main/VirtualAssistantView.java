@@ -256,7 +256,7 @@ public class VirtualAssistantView extends JFrame
             return;
         }
         //
-        for ( Vertex person : reference )
+        for ( final Vertex person : reference )
         {
             final @NotNull String birthplace = person.profile().getOccupation();
             if ( birthplace.isEmpty() )
@@ -666,6 +666,7 @@ public class VirtualAssistantView extends JFrame
                 echo("4. Who is <reference>?");
                 echo("5. Who is (a or an) <kinship-term> of <reference>?");
                 echo("6. Who am I?");
+                echo("7. Where <reference> (was or were) born?");
                 echo("Where '<reference>' is one of the following: ");
                 // "I", "my <relative>", "my <relative>s' <relative>", "<full name>", "me", "myself"
                 echo("1. I");

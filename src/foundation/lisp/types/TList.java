@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class TList extends TObject<List<TObject<?>>>
 {
     static final TList EMPTY_LIST = new TList( Collections.emptyList() );
-    static final String EMPTY_LIST_KEYWORD = "vacant";
+    public static final String EMPTY_LIST_KEYWORD = "vacant";
 
     TList(final @NotNull List<TObject<?>> list)
     {

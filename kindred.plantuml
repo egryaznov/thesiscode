@@ -1,0 +1,333 @@
+@startuml
+
+title __KINDRED's Class Diagram__\n
+
+  package foundation {
+    package foundation.entity {
+      class Bond {
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.main {
+      class Camera {
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.main {
+      class Database {
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.entity {
+      class FamilyTree {
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.main {
+      class GenealogyView {
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.lisp {
+      package foundation.lisp.exceptions {
+        class IllegalInterpreterStateException {
+        }
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.lisp {
+      class Interpreter {
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.lisp {
+      package foundation.lisp.exceptions {
+        class InterpreterException {
+        }
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.lisp {
+      package foundation.lisp.exceptions {
+        class InvalidTermException {
+        }
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.entity {
+      class KinshipDictionary {
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.lisp {
+      package foundation.lisp.types {
+        class Lambda {
+        }
+      }
+    }
+  }
+  
+
+  package foundation {
+    class Main {
+    }
+  }
+  
+
+  package foundation {
+    package foundation.main {
+      class MainFrame {
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.entity {
+      class MaritalBond {
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.lisp {
+      package foundation.lisp.exceptions {
+        class NotEnoughKnowledge {
+        }
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.main {
+      class Ontology {
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.entity {
+      class Person {
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.main {
+      class ProfileFrame {
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.lisp {
+      package foundation.lisp.types {
+        class TBoolean {
+        }
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.lisp {
+      package foundation.lisp.types {
+        class TDate {
+        }
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.lisp {
+      package foundation.lisp.types {
+        abstract class TFunction {
+        }
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.lisp {
+      package foundation.lisp.types {
+        class TList {
+        }
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.lisp {
+      package foundation.lisp.types {
+        class TNumeral {
+        }
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.lisp {
+      package foundation.lisp.types {
+        abstract class TObject {
+        }
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.lisp {
+      package foundation.lisp.types {
+        class TPerson {
+        }
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.lisp {
+      package foundation.lisp.types {
+        class TString {
+        }
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.lisp {
+      package foundation.lisp.types {
+        class TVoid {
+        }
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.lisp {
+      package foundation.lisp.types {
+        interface ThrowingFunction {
+        }
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.lisp {
+      package foundation.lisp.types {
+        enum Type {
+        }
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.entity {
+      class Vertex {
+      }
+    }
+  }
+  
+
+  package foundation {
+    package foundation.main {
+      class VirtualAssistantView {
+      }
+    }
+  }
+  
+
+  Bond o-- Person : firstPerson
+  Bond o-- Person : secondPerson
+  Camera o-- GenealogyView : view
+  Camera o-- SmoothCenteringOnPoint : action
+  GenealogyView -up-|> JPanel
+  GenealogyView o-- IncrementTask : increment
+  GenealogyView o-- Ontology : model
+  GenealogyView o-- ProfileFrame : profileFrame
+  GenealogyView o-- Camera : camera
+  IllegalInterpreterStateException -up-|> InterpreterException
+  Interpreter o-- Ontology : ontology
+  InvalidTermException -up-|> InterpreterException
+  Lambda -up-|> TFunction
+  Lambda o-- Interpreter : in
+  MainFrame -up-|> JFrame
+  MainFrame o-- GenealogyView : genealogyView
+  MainFrame o-- VirtualAssistantView : vaView
+  MaritalBond -up-|> Bond
+  NotEnoughKnowledge -up-|> InterpreterException
+  Ontology o-- FamilyTree : tree
+  ProfileFrame -up-|> JFrame
+  ProfileFrame o-- Person : selectedPerson
+  ProfileFrame o-- GenealogyView : view
+  TBoolean -up-|> TObject
+  TDate -up-|> TObject
+  TFunction -up-|> TObject
+  TList -up-|> TObject
+  TNumeral -up-|> TObject
+  TObject o-- Type : type
+  TObject o-- T : value
+  TPerson -up-|> TObject
+  TString -up-|> TObject
+  TVoid -up-|> TObject
+  Vertex o-- Person : person
+  Vertex o-- Vertex : mother
+  Vertex o-- Vertex : father
+  Vertex o-- Vertex : spouse
+  VirtualAssistantView -up-|> JFrame
+  VirtualAssistantView o-- GenealogyView : genealogyView
+  VirtualAssistantView o-- Interpreter : in
+  VirtualAssistantView o-- Vertex : ego
+
+
+right footer
+
+
+PlantUML diagram generated by SketchIt! (https://bitbucket.org/pmesmeur/sketch.it)
+For more information about this tool, please contact philippe.mesmeur@gmail.com
+endfooter
+
+@enduml
