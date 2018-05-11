@@ -35,7 +35,25 @@ public class TDate extends TObject<Calendar>
         return date.equals(NOW_KEYWORD) || date.matches(DATE_PATTERN);
     }
 
-    @SuppressWarnings("unused")
+    private @NotNull TNumeral day()
+    {
+        assert this.getValue() != null : "Assert: TDate.year, this.value is null!";
+        return new TNumeral( getValue().get(Calendar.DAY_OF_MONTH) );
+    }
+
+    private @NotNull TNumeral month()
+    {
+        assert this.getValue() != null : "Assert: TDate.year, this.value is null!";
+        // NOTE: Отсчёт месяцев в классе Calendar начинается с нуля!
+        return new TNumeral( getValue().get(Calendar.MONTH) + 1);
+    }
+
+    private @NotNull TNumeral year()
+    {
+        assert this.getValue() != null : "Assert: TDate.year, this.value is null!";
+        return new TNumeral( this.getValue().get(Calendar.YEAR) );
+    }
+
     private @NotNull TBoolean before(final @NotNull TDate date)
     {
         assert this.getValue() != null : "Assert: TDate.before, super.value is null";
@@ -43,7 +61,6 @@ public class TDate extends TObject<Calendar>
         return TBoolean.get(this.getValue().before( date.getValue() ));
     }
 
-    @SuppressWarnings("unused")
     private @NotNull TBoolean after(final @NotNull TDate date)
     {
         assert this.getValue() != null : "Assert: TDate.after, super.value is null";
@@ -52,7 +69,6 @@ public class TDate extends TObject<Calendar>
         return TBoolean.get(this.getValue().after( date.getValue() ));
     }
 
-    @SuppressWarnings("unused")
     private @NotNull TBoolean during(final @NotNull TDate beginning, final @NotNull TDate end)
     {
         assert after(beginning).getValue() != null : "Assert: TDate.during, super.value is null";
@@ -75,6 +91,12 @@ public class TDate extends TObject<Calendar>
         dict.put( after.getName(), after );
         final @NotNull DateFunction date = new DateFunction();
         dict.put( date.getName(), date );
+        final @NotNull var year = new YearFunction();
+        dict.put( year.getName(), year );
+        final @NotNull var month = new MonthFunction();
+        dict.put( month.getName(), month );
+        final @NotNull var day = new DayFunction();
+        dict.put( day.getName(), day );
     }
 
     static @NotNull TDate parseDate(final String rawDate) throws InvalidTermException
@@ -112,7 +134,7 @@ public class TDate extends TObject<Calendar>
     public @NotNull String termToString()
     {
         final @Nullable Calendar value = getValue();
-        return ( value == null )? TVoid.instance.valueToString() : String.format("(date %s)", Person.calendarToString(value));
+        return ( value == null )? TVoid.instance.valueToString() : String.format("(date '%s')", Person.calendarToString(value));
     }
 
     private static class During extends TFunction<TDate, TBoolean>
@@ -231,6 +253,93 @@ public class TDate extends TObject<Calendar>
         @NotNull String mismatchMessage(final int nGivenArgs)
         {
             return "Arity mismatch: date, expected exactly one argument, but got " + nGivenArgs;
+        }
+    }
+
+    private static class DayFunction extends TFunction<TDate, TNumeral>
+    {
+        DayFunction()
+        {
+            super("day", "day");
+        }
+
+        @Override
+        boolean argsArityMatch(int argsCount)
+        {
+            return argsCount == 1;
+        }
+
+        @NotNull
+        @Override
+        TNumeral call(final @NotNull List<TDate> args)
+        {
+            // args.size == 1
+            final @NotNull TDate date = args.get(0);
+            return date.day();
+        }
+
+        @Override
+        @NotNull String mismatchMessage(int nGivenArgs)
+        {
+            return "Arity Mismatch: day, expected exactly one argument, but got " + nGivenArgs;
+        }
+    }
+
+    private static class MonthFunction extends TFunction<TDate, TNumeral>
+    {
+        MonthFunction()
+        {
+            super("month", "month");
+        }
+
+        @Override
+        boolean argsArityMatch(int argsCount)
+        {
+            return argsCount == 1;
+        }
+
+        @NotNull
+        @Override
+        TNumeral call(final @NotNull List<TDate> args)
+        {
+            // args.size == 1
+            final @NotNull TDate date = args.get(0);
+            return date.month();
+        }
+
+        @Override
+        @NotNull String mismatchMessage(int nGivenArgs)
+        {
+            return "Arity Mismatch: month, expected exactly one argument, but got " + nGivenArgs;
+        }
+    }
+
+    private static class YearFunction extends TFunction<TDate, TNumeral>
+    {
+        YearFunction()
+        {
+            super("year", "year");
+        }
+
+        @Override
+        boolean argsArityMatch(int argsCount)
+        {
+            return argsCount == 1;
+        }
+
+        @NotNull
+        @Override
+        TNumeral call(final @NotNull List<TDate> args)
+        {
+            // args.size == 1
+            final @NotNull TDate date = args.get(0);
+            return date.year();
+        }
+
+        @Override
+        @NotNull String mismatchMessage(int nGivenArgs)
+        {
+            return "Arity Mismatch: year, expected exactly one argument, but got " + nGivenArgs;
         }
     }
 }

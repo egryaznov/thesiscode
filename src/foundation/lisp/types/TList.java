@@ -42,7 +42,7 @@ public class TList extends TObject<List<TObject<?>>>
         {
             return TVoid.instance;
         }
-        // NOTE: Int.MIN_VALUE < index < Int.MAX_VALUE
+        // NOTE: Now Int.MIN_VALUE < longIndex < Int.MAX_VALUE
         final int len = getValue().size();
         final int index = (int)( (longIndex < 0)? (len + longIndex) : longIndex );
         final @NotNull TObject<?> result = ( index < 0 || index >= len )? TVoid.instance : getValue().get( index );
@@ -526,6 +526,7 @@ public class TList extends TObject<List<TObject<?>>>
 
         @NotNull
         @Override
+        @SuppressWarnings("unchecked")
         TList call(final @NotNull List<TObject<?>> args) throws InterpreterException
         {
             // args.size is 2 or 3

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="LambdaTypeTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2018-05-07T19:36:27" hostname="MacBook-Air-Evgenij.local" time="0.03">
+  <properties/>
+  <testcase name="lambdaTest0()" classname="LambdaTypeTest" time="0.002"/>
+  <testcase name="lambdaTest1()" classname="LambdaTypeTest" time="0.001"/>
+  <testcase name="lambdaTest2()" classname="LambdaTypeTest" time="0.006"/>
+  <system-out><![CDATA[Connection to the database has been established
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

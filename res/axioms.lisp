@@ -1,5 +1,7 @@
 ; тест комментария
-(define ego (person 'Сергей' 'Грязнов'))
+(define ego (person 'Евгений' 'Грязнов'))
+
+(define square (lambda (n) (* n n)))
 
 (define void? (lambda (obj)
                 (of-type? obj 'void')
@@ -63,7 +65,7 @@
 
 (define twice (lambda (f) ( lambda (n) (f (f n)) )))
 
-(define factorial (lambda (n) (filtered-accumulate truth * id 1 inc n)))
+(define factorial (lambda (n) (if (= n 0) 1 (* n (factorial (dec n))))))
 
 (define empty? (lambda (lst) (= 0 (count lst))))
 
@@ -126,3 +128,23 @@
         )
     )
 )
+
+(define parents (lambda (p) (join (mother p) (father p))))
+
+(define cousins (lambda (p) (children (children (parents (parents p))))))
+
+(define WWII-start (date '01.09.1939'))
+
+(define WWII-end (date '02.09.1945'))
+
+(define times-n (lambda (f n) (lambda (x) (if (= n 0)
+                                              x
+                                              ((times-n f (- n 1)) (f x))
+                                          )
+                              )
+                )
+)
+
+(define double (lambda (n) (* 2 n)))
+
+(define apply (lambda (f x) (f x)))

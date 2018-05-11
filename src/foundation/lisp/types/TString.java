@@ -1,6 +1,7 @@
 package foundation.lisp.types;
 
 import foundation.lisp.exceptions.InterpreterException;
+import foundation.lisp.exceptions.InvalidTermException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
@@ -36,15 +37,34 @@ public class TString extends TObject<String>
         final @NotNull var chars = new LinkedList<TObject<?>>();
         for (int i = 0; i < getValue().length(); i++)
         {
-            chars.add(this.substring(i, i + 1));
+            try
+            {
+                // NOTE: substring may throw an exception
+                // NOTE: but here it will never happen, since [i, i+1) is always a correct interval
+                chars.add(this.substring(i, i + 1));
+            }
+            catch (InvalidTermException e)
+            {
+                e.printStackTrace();
+            }
         }
         //
         return new TList(chars);
     }
 
-    private @NotNull TString substring(final int beginIndexInclusive, final int endIndexExclusive)
+    private @NotNull TString substring(final int beginIndexInclusive, final int endIndexExclusive) throws InvalidTermException
     {
         assert getValue() != null : "Assert TString.substring, value is null!";
+        if ( beginIndexInclusive < 0
+                || endIndexExclusive < 0
+                || (beginIndexInclusive > endIndexExclusive)
+                || (beginIndexInclusive >= getValue().length())
+                || (endIndexExclusive > getValue().length()))
+        {
+            throw new InvalidTermException(String.format("Substring function, invalid arguments, begin: %d, end: %d",
+                    beginIndexInclusive,
+                    endIndexExclusive));
+        }
         return new TString(getValue().substring(beginIndexInclusive, endIndexExclusive), false);
     }
 
@@ -73,6 +93,12 @@ public class TString extends TObject<String>
         //
         final @NotNull var charsFunc = new Characters();
         dict.put( charsFunc.getName(), charsFunc );
+        //
+        final @NotNull var substring = new Substring();
+        dict.put( substring.getName(), substring );
+        //
+        final @NotNull var toString = new ToString();
+        dict.put( toString.getName(), toString );
     }
 
     @Override
@@ -82,6 +108,89 @@ public class TString extends TObject<String>
     }
 
 
+
+    private static class ToString extends TFunction<TNumeral, TString>
+    {
+
+        ToString()
+        {
+            super("string", "string");
+        }
+
+        @Override
+        boolean argsArityMatch(final int argsCount)
+        {
+            return argsCount == 1;
+        }
+
+        @NotNull
+        @Override
+        TString call(final @NotNull List<TNumeral> args)
+        {
+            final @NotNull var numeral = (TNumeral)args.get(0);
+            return new TString( numeral.termToString(), false );
+        }
+
+        @Override
+        String mismatchMessage(int nGivenArgs)
+        {
+            return "Arity mismatch: string, expected exactly one argument, but got " + nGivenArgs;
+        }
+    }
+
+    private static class Substring extends TFunction<TObject<?>, TString>
+    {
+        Substring()
+        {
+            super("substr", "substr");
+        }
+
+        @Override
+        boolean argsArityMatch(final int argsCount)
+        {
+            return (argsCount == 2) || (argsCount == 3);
+        }
+
+        @NotNull
+        @Override
+        TString call(final @NotNull List<TObject<?>> args) throws InterpreterException
+        {
+            final @NotNull TString  result;
+            final @NotNull TString  source              = (TString) args.get(0);
+            final @NotNull TNumeral beginIndexInclusive = (TNumeral)args.get(1);
+            //
+            assert beginIndexInclusive.getValue() != null : "Assert: substr, beginIndex.value is null!";
+            // args.size is either 2 or 3
+            if ( args.size() == 3 )
+            {
+                final @NotNull TNumeral endIndexExclusive = (TNumeral)args.get(2);
+                assert endIndexExclusive.getValue() != null : "Assert: substr, endIndex.value is null!";
+                //
+                result = source.substring(
+                        beginIndexInclusive.getValue().intValue(),
+                        endIndexExclusive.getValue().intValue()
+                );
+            }
+            else
+            {
+                assert source.getValue() != null : "Assert: substr, source.value is null!";
+                //
+                final int sourceLength = source.getValue().length();
+                result = source.substring(
+                        beginIndexInclusive.getValue().intValue(),
+                        sourceLength
+                );
+            }
+            //
+            return result;
+        }
+
+        @Override
+        String mismatchMessage(final int nGivenArgs)
+        {
+            return "Args mismatch: substr, expected either 2 or three arguments, but got " + nGivenArgs;
+        }
+    }
 
     private static class Characters extends TFunction<TString, TList>
     {

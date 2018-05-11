@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="PersonTypeTest" tests="19" skipped="0" failures="0" errors="0" timestamp="2018-05-07T19:36:27" hostname="MacBook-Air-Evgenij.local" time="0.221">
+  <properties/>
+  <testcase name="kinshipTest0()" classname="PersonTypeTest" time="0.003"/>
+  <testcase name="kinshipTest1()" classname="PersonTypeTest" time="0.001"/>
+  <testcase name="fatherTest0()" classname="PersonTypeTest" time="0.001"/>
+  <testcase name="fatherTest1()" classname="PersonTypeTest" time="0.001"/>
+  <testcase name="fatherTest2()" classname="PersonTypeTest" time="0.001"/>
+  <testcase name="attrTest0()" classname="PersonTypeTest" time="0.01"/>
+  <testcase name="attrTest1()" classname="PersonTypeTest" time="0.001"/>
+  <testcase name="attrTest2()" classname="PersonTypeTest" time="0.001"/>
+  <testcase name="attrTest3()" classname="PersonTypeTest" time="0.001"/>
+  <testcase name="attrTest4()" classname="PersonTypeTest" time="0.001"/>
+  <testcase name="childrenTest0()" classname="PersonTypeTest" time="0.001"/>
+  <testcase name="childrenTest1()" classname="PersonTypeTest" time="0.002"/>
+  <testcase name="childrenTest2()" classname="PersonTypeTest" time="0.0"/>
+  <testcase name="motherTest0()" classname="PersonTypeTest" time="0.0"/>
+  <testcase name="genDistTest0()" classname="PersonTypeTest" time="0.002"/>
+  <testcase name="genDistTest1()" classname="PersonTypeTest" time="0.001"/>
+  <testcase name="genDistTest2()" classname="PersonTypeTest" time="0.001"/>
+  <testcase name="genDistTest3()" classname="PersonTypeTest" time="0.002"/>
+  <testcase name="genDistTest4()" classname="PersonTypeTest" time="0.001"/>
+  <system-out><![CDATA[Connection to the database has been established
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,161 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TFunction</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">foundation.lisp.types</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TFunction (foundation.lisp.types)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TFunction</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    83,3%
+  </span>
+  <span class="absValue">
+    (5/ 6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    95,5%
+  </span>
+  <span class="absValue">
+    (21/ 22)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;package foundation.lisp.types;
+<i>2</i>&nbsp;
+<i>3</i>&nbsp;import foundation.lisp.exceptions.InterpreterException;
+<i>4</i>&nbsp;import foundation.lisp.exceptions.InvalidTermException;
+<i>5</i>&nbsp;import org.jetbrains.annotations.NotNull;
+<i>6</i>&nbsp;
+<i>7</i>&nbsp;import java.util.List;
+<i>8</i>&nbsp;
+<i>9</i>&nbsp;public abstract class TFunction&lt;T, R&gt; extends TObject&lt;String&gt;
+<i>10</i>&nbsp;{
+<i>11</i>&nbsp;    private final String name;
+<i>12</i>&nbsp;
+<i>13</i>&nbsp;    TFunction(final String name, final String term)
+<i>14</i>&nbsp;    {
+<b class="fc"><i>15</i>&nbsp;        super(Type.FUNCTION, term);</b>
+<b class="fc"><i>16</i>&nbsp;        this.name = name;</b>
+<b class="fc"><i>17</i>&nbsp;    }</b>
+<i>18</i>&nbsp;
+<i>19</i>&nbsp;
+<i>20</i>&nbsp;    abstract boolean argsArityMatch(final int argsCount);
+<i>21</i>&nbsp;
+<i>22</i>&nbsp;    abstract @NotNull R call(final @NotNull List&lt;T&gt; args) throws InterpreterException;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;    abstract String mismatchMessage(final int nGivenArgs);
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;    public @NotNull R apply(final @NotNull List&lt;T&gt; args) throws InterpreterException
+<i>27</i>&nbsp;    {
+<i>28</i>&nbsp;        final @NotNull R result;
+<b class="fc"><i>29</i>&nbsp;        if ( argsArityMatch(args.size()) )</b>
+<i>30</i>&nbsp;        {
+<i>31</i>&nbsp;            try
+<i>32</i>&nbsp;            {
+<b class="fc"><i>33</i>&nbsp;                result = call(args);</b>
+<i>34</i>&nbsp;            }
+<b class="fc"><i>35</i>&nbsp;            catch (final ClassCastException e)</b>
+<i>36</i>&nbsp;            {
+<b class="fc"><i>37</i>&nbsp;                throw new InvalidTermException( name + &quot;; &quot; + parseCastErrorMessage(e.getMessage()) + &quot; in argument list: &quot; + args);</b>
+<b class="fc"><i>38</i>&nbsp;            }</b>
+<i>39</i>&nbsp;        }
+<i>40</i>&nbsp;        else
+<i>41</i>&nbsp;        {
+<b class="fc"><i>42</i>&nbsp;            throw new InvalidTermException(mismatchMessage(args.size()));</b>
+<i>43</i>&nbsp;        }
+<i>44</i>&nbsp;        //
+<b class="fc"><i>45</i>&nbsp;        return result;</b>
+<i>46</i>&nbsp;    }
+<i>47</i>&nbsp;
+<i>48</i>&nbsp;    private String parseCastErrorMessage(final String msg)
+<i>49</i>&nbsp;    {
+<b class="fc"><i>50</i>&nbsp;        final String[] words = msg.split(&quot; &quot;);</b>
+<b class="fc"><i>51</i>&nbsp;        final String gotType = words[0];</b>
+<b class="fc"><i>52</i>&nbsp;        final int gotLastDotIndex = gotType.lastIndexOf(&#39;.&#39;);</b>
+<b class="fc"><i>53</i>&nbsp;        final int nWords = words.length;</b>
+<b class="fc"><i>54</i>&nbsp;        final String expectedType = words[nWords - 1];</b>
+<b class="fc"><i>55</i>&nbsp;        final int expectedLastDotIndex = expectedType.lastIndexOf(&#39;.&#39;);</b>
+<b class="fc"><i>56</i>&nbsp;        return String.format(&quot;Type Mismatch: expected a %s, got a %s&quot;,</b>
+<b class="fc"><i>57</i>&nbsp;                expectedType.substring(expectedLastDotIndex + 1, expectedType.length()),</b>
+<b class="fc"><i>58</i>&nbsp;                gotType.substring(gotLastDotIndex + 1, gotType.length())</b>
+<i>59</i>&nbsp;        );
+<i>60</i>&nbsp;    }
+<i>61</i>&nbsp;
+<i>62</i>&nbsp;    @Override
+<i>63</i>&nbsp;    public @NotNull String termToString()
+<i>64</i>&nbsp;    {
+<b class="fc"><i>65</i>&nbsp;        return name;</b>
+<i>66</i>&nbsp;    }
+<i>67</i>&nbsp;
+<i>68</i>&nbsp;    @Override
+<i>69</i>&nbsp;    public String valueToString()
+<i>70</i>&nbsp;    {
+<b class="nc"><i>71</i>&nbsp;        return getName();</b>
+<i>72</i>&nbsp;    }
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;    public String getName()
+<i>75</i>&nbsp;    {
+<b class="fc"><i>76</i>&nbsp;        return name;</b>
+<i>77</i>&nbsp;    }
+<i>78</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2018-05-07 21:33</div>
+</div>
+</body>
+</html>

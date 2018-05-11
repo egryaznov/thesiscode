@@ -25,7 +25,6 @@ public abstract class TObject<T>
 
 
 
-
     @Nullable T getValue()
     {
         return value;
@@ -144,7 +143,7 @@ public abstract class TObject<T>
             final @NotNull TObject<?> patient = args.get(0);
             final @NotNull TString rawType = (TString)args.get(1);
             assert patient.getValue() != null : "Assert: OfType.call, patient.value is null";
-            assert rawType.getValue()    != null : "Assert: OfType.call, type.value is null";
+            assert rawType.getValue() != null : "Assert: OfType.call, type.value is null";
             final @NotNull String typeStrLowercased = rawType.getValue().toLowerCase();
             @Nullable Type type = null;
             for (final Type t : Type.values())

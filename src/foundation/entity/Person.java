@@ -111,7 +111,7 @@ public class Person
         final int curDay     = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
         final int birthMonth = birthDate.get(Calendar.MONTH);
         final int curMonth   = Calendar.getInstance().get(Calendar.MONTH);
-        final int yearDiff = Calendar.getInstance().get(Calendar.YEAR) - birthDate.get(Calendar.YEAR);
+        final int yearDiff   = Calendar.getInstance().get(Calendar.YEAR) - birthDate.get(Calendar.YEAR);
         final int age;
         if ( curMonth == birthMonth )
         {

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="DateTypeTest" tests="16" skipped="0" failures="0" errors="0" timestamp="2018-05-07T19:36:26" hostname="MacBook-Air-Evgenij.local" time="0.165">
+  <properties/>
+  <testcase name="before()" classname="DateTypeTest" time="0.001"/>
+  <testcase name="duringTest0()" classname="DateTypeTest" time="0.001"/>
+  <testcase name="duringTest1()" classname="DateTypeTest" time="0.001"/>
+  <testcase name="duringTest2()" classname="DateTypeTest" time="0.001"/>
+  <testcase name="duringTest3()" classname="DateTypeTest" time="0.001"/>
+  <testcase name="duringTest4()" classname="DateTypeTest" time="0.002"/>
+  <testcase name="dateMonth()" classname="DateTypeTest" time="0.002"/>
+  <testcase name="dateTest1()" classname="DateTypeTest" time="0.002"/>
+  <testcase name="before1()" classname="DateTypeTest" time="0.001"/>
+  <testcase name="before2()" classname="DateTypeTest" time="0.001"/>
+  <testcase name="dateLambda()" classname="DateTypeTest" time="0.001"/>
+  <testcase name="afterTest()" classname="DateTypeTest" time="0.001"/>
+  <testcase name="dateDay()" classname="DateTypeTest" time="0.002"/>
+  <testcase name="afterTest1()" classname="DateTypeTest" time="0.001"/>
+  <testcase name="afterTest2()" classname="DateTypeTest" time="0.001"/>
+  <testcase name="dateYear()" classname="DateTypeTest" time="0.001"/>
+  <system-out><![CDATA[Connection to the database has been established
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

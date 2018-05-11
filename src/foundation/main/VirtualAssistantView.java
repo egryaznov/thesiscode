@@ -177,26 +177,26 @@ public class VirtualAssistantView extends JFrame
         lastMessage = userMessage;
         echo(userMessage, false);
         // Lowercase and remove punctuation, if any
-        final @NotNull StringBuilder sb = new StringBuilder(userMessage.toLowerCase());
+        final @NotNull StringBuilder sb = new StringBuilder(userMessage);
         final char lastChar = sb.charAt(sb.length() - 1);
         final boolean isQuestion = (lastChar == '?');
         if ( lastChar == '.' || isQuestion || lastChar == '!')
         {
             sb.deleteCharAt(sb.length() - 1);
         }
-        final @NotNull String query = sb.toString();
+        final @NotNull String msgNoPunctuation = sb.toString();
         // Choose how to respond to a query
-        if (isQuery(query))
+        if (isQuery(msgNoPunctuation))
         {
-            processQuery(query);
+            processQuery(msgNoPunctuation);
         }
         else if (isQuestion)
         {
-            processQuestion(query);
+            processQuestion(msgNoPunctuation.toLowerCase());
         }
         else
         {
-            processCommand(query);
+            processCommand(msgNoPunctuation.toLowerCase());
         }
     }
 
@@ -272,6 +272,7 @@ public class VirtualAssistantView extends JFrame
 
     private void howQuestion(final @NotNull String[] words)
     {
+        // TODO: Who is <reference> to <reference>?
         if (words.length < 7)
         {
             unknownMessage(true);
@@ -324,15 +325,21 @@ public class VirtualAssistantView extends JFrame
         final @NotNull Vertex from = firstRef.get(0);
         for ( Vertex to : lastRef )
         {
-            final @NotNull List<String> toKinFrom = KinshipDictionary.instance.shorten( in.ontology().tree().kinship(to, from) );
-            final @NotNull String prefix = (from.equals(ego))? "You are " :  from.profile().getFirstName() + " " + from.profile().getLastName() + " is a ";
-            final @NotNull String ending = (to.equals(ego))? " of you" : " of " + to.profile().getFirstName() + " " + to.profile().getLastName();
+            final @NotNull List<String> toKinFrom  = KinshipDictionary.instance.shorten( in.ontology().tree().kinship(to, from) );
+            final @NotNull String firstPersonName  = (from.equals(ego))? "You" : from.profile().getFirstName() + " " + from.profile().getLastName();
+            final @NotNull String secondPersonName = (to.equals(ego))? "you" : to.profile().getFirstName() + " " + to.profile().getLastName();
+            final @NotNull String message;
             if ( toKinFrom.isEmpty() )
             {
-                echo(String.format("%s and %s are not related.", prefix, ending));
-                continue;
+                message = String.format("%s and %s are not related.", firstPersonName, secondPersonName);
             }
-            final @NotNull String message = toKinFrom.stream().collect(Collectors.joining(" of a ", prefix, ending));
+            else
+            {
+                final @NotNull String prefix = (from.equals(ego))? " are a " : " is a ";
+                message = toKinFrom.stream().collect(Collectors.joining(" of a ",
+                        firstPersonName + prefix,
+                        " of " + secondPersonName));
+            }
             echo(message);
         }
     }
@@ -723,7 +730,7 @@ public class VirtualAssistantView extends JFrame
             {
                 try
                 {
-                    in.exec(axioms);
+                    in.exec(axioms, null);
                     echo("Successfully loaded.");
                 }
                 catch (final InterpreterException e)

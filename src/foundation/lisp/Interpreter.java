@@ -13,6 +13,7 @@ import foundation.lisp.types.TPerson;
 import foundation.lisp.types.TString;
 import foundation.lisp.types.TVoid;
 import foundation.lisp.types.Type;
+import foundation.main.Database;
 import foundation.main.Ontology;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -21,6 +22,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -55,6 +57,15 @@ public class Interpreter
     public Interpreter(final @NotNull Ontology ontology)
     {
         this.ontology = ontology;
+        TPerson.setInterpreter(this);
+        initAtomicFunctions();
+        initKeywords();
+    }
+
+    public Interpreter(final @NotNull String genealogyFilename)
+    {
+        Database.instance.establishConnection(genealogyFilename);
+        this.ontology = new Ontology();
         TPerson.setInterpreter(this);
         initAtomicFunctions();
         initKeywords();
@@ -107,11 +118,11 @@ public class Interpreter
     }
 
     /*
-        Executes every term in text file `axioms`, but ignores the result of an evaluation.
-        Allows to insert line comments which should start with an '#'.
+        Executes every term in text `file` and println the result in `outputStream` iff it's not null.
+        Allows to insert line comments which should start with an ';'.
         Use the method to quickly evaluate definitions from a file.
      */
-    public void exec(final @NotNull File file) throws InterpreterException
+    public void exec(final @NotNull File file, final @Nullable PrintStream outputStream) throws InterpreterException
     {
         try ( final @NotNull BufferedReader br = new BufferedReader(new FileReader(file)) )
         {
@@ -136,10 +147,15 @@ public class Interpreter
             }
             // Split the giant concatenated term and execute each axiom
             // XXX: Do we need rewriting here?
+            // XXX: Apparently no, since everything works fine without it
             final @NotNull List<String> axioms = splitByTerms(terms + ")", false, false, false);
             for (final String term : axioms)
             {
-                exec(term);
+                final @NotNull TObject<?> evaluatedTerm = exec(term);
+                if ( outputStream != null )
+                {
+                    outputStream.println(evaluatedTerm);
+                }
             }
         }
         catch (final IOException e)
@@ -249,10 +265,14 @@ public class Interpreter
             {
                 throw new InvalidTermException("Cannot redefine a keyword: " + reference);
             }
-            // NOTE: Only one term per reference:
+            // NOTE: We permit only one term per reference:
             definitions.remove(reference);
+            // NOTE: In case we redefine some previously cached term:
+            cachedTerms.remove(reference);
             final @NotNull String designatum = terms.get(2);
             final @NotNull TObject<?> evaluatedDesignatum = eval(designatum);
+            // NOTE: It may appear that `.termToString()` is the same as `designatum`,
+            // NOTE: and it is true for all types except `Function`.
             definitions.put( reference, evaluatedDesignatum.termToString() );
             result = TVoid.instance;
         }
@@ -457,7 +477,7 @@ public class Interpreter
     }
 
     /*
-        Removes unnecessary whitespaces in 'query' and makes the whole string lowercase.
+        Removes unnecessary whitespaces in 'query'.
         This operation prepares the query for evaluation. We called it 'clipping', hence the name of this method.
      */
     public String clip(final String query)
@@ -558,11 +578,12 @@ public class Interpreter
 
     /*
         Checks whether the `term` is a reference.
+        Note that upper case letters are prohibited, because we lowercase a term before its evaluation.
         A reference is used in a `(define reference term)` query.
      */
     private boolean isReference(final String term)
     {
-        return term.matches("\\b([a-z]+-)*[a-z]+\\b\\??");
+        return term.matches("\\b([a-zA-Z]+-)*[a-zA-Z]+\\b\\??");
     }
 
     /*
