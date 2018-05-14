@@ -215,9 +215,12 @@ public class MainFrame extends JFrame
         @Override
         public void actionPerformed(ActionEvent e)
         {
+            final @NotNull var DEFAULT_GEN_DIR = "/res/genealogies/";
+            final @NotNull String currentDirName = System.getProperty("user.dir");
+            System.out.println(currentDirName);
             @Nullable String genealogyTitle = "";
             boolean dirSuccessfullyCreated = false;
-            @NotNull String msg = "Enter the title of your new genealogy:";
+            @NotNull var msg = "Enter the title of your new genealogy:";
             while (!dirSuccessfullyCreated)
             {
                 genealogyTitle = JOptionPane.showInputDialog(
@@ -230,13 +233,13 @@ public class MainFrame extends JFrame
                 {
                     break;
                 }
-                dirSuccessfullyCreated = !genealogyTitle.isEmpty()
-                        && (new File("res/genealogies/" + genealogyTitle)).mkdir();
+                final @NotNull var newSubDir = new File(currentDirName + DEFAULT_GEN_DIR + genealogyTitle);
+                dirSuccessfullyCreated = !genealogyTitle.isEmpty() && newSubDir.mkdirs();
                 msg = "Cannot create a genealogy with such title, please enter another:";
             }
             if ( genealogyTitle != null )
             {
-                Database.instance.createNewDatabase(genealogyTitle);
+                Database.instance.createNewDatabase(currentDirName + DEFAULT_GEN_DIR + genealogyTitle);
                 initView();
             }
         }

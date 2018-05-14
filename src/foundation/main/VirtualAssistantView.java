@@ -17,6 +17,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -26,6 +27,8 @@ import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 import javax.swing.text.DefaultCaret;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -64,14 +67,14 @@ public class VirtualAssistantView extends JFrame
 
     VirtualAssistantView(final @NotNull GenealogyView genealogyView)
     {
-        final int DEFAULT_WIDTH  = 339;
+        final int DEFAULT_WIDTH = 339;
         final int DEFAULT_HEIGHT = 317;
         // Initialize fields
-        this.in = new Interpreter( genealogyView.getModel() );
+        this.in = new Interpreter(genealogyView.getModel());
         this.genealogyView = genealogyView;
         this.lispDocJSON = loadLispDocumentation();
         // Automatically scroll the dialog down when new message is appended
-        ((DefaultCaret)outputArea.getCaret()).setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+        ((DefaultCaret) outputArea.getCaret()).setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
         // Customize the frame
         setContentPane(mainPanel);
         setAutoRequestFocus(true);
@@ -102,7 +105,6 @@ public class VirtualAssistantView extends JFrame
     }
 
 
-
     private @NotNull JSONObject loadLispDocumentation()
     {
         final @NotNull String jsonFileName = "res/lisp-doc.json";
@@ -110,10 +112,10 @@ public class VirtualAssistantView extends JFrame
         final @Nullable InputStream jarIn = getClass().getResourceAsStream("/" + jsonFileName);
         final @NotNull File jsonFile = new File(jsonFileName);
         @NotNull JSONObject result = new JSONObject();
-        if ( jarIn == null )
+        if (jarIn == null)
         {
             System.out.println("Cannot find json documentation in jar, trying to find it in: " + jsonFileName);
-            if ( !jsonFile.exists() )
+            if (!jsonFile.exists())
             {
                 System.out.println("There is no .json either! Documentation will be empty!");
             }
@@ -123,9 +125,8 @@ public class VirtualAssistantView extends JFrame
                 try (final @NotNull BufferedReader br = new BufferedReader(new FileReader(jsonFile)))
                 {
                     final @NotNull JSONParser parser = new JSONParser();
-                    result = (JSONObject)parser.parse(br);
-                }
-                catch (final IOException | ParseException e)
+                    result = (JSONObject) parser.parse(br);
+                } catch (final IOException | ParseException e)
                 {
                     e.printStackTrace();
                 }
@@ -136,9 +137,8 @@ public class VirtualAssistantView extends JFrame
             try (final @NotNull BufferedReader br = new BufferedReader(new InputStreamReader(jarIn)))
             {
                 final @NotNull JSONParser parser = new JSONParser();
-                result = (JSONObject)parser.parse(br);
-            }
-            catch (final IOException | ParseException e)
+                result = (JSONObject) parser.parse(br);
+            } catch (final IOException | ParseException e)
             {
                 e.printStackTrace();
             }
@@ -155,8 +155,8 @@ public class VirtualAssistantView extends JFrame
 
     private void echo(final @NotNull String text, final boolean fromAmi)
     {
-        final String msg = String.format("   [%s]: %s", (fromAmi)? VA_NAME : "YOU", text);
-        if ( !fromAmi )
+        final String msg = String.format("   [%s]: %s", (fromAmi) ? VA_NAME : "YOU", text);
+        if (!fromAmi)
         {
             outputArea.append("\n");
         }
@@ -180,7 +180,7 @@ public class VirtualAssistantView extends JFrame
         final @NotNull StringBuilder sb = new StringBuilder(userMessage);
         final char lastChar = sb.charAt(sb.length() - 1);
         final boolean isQuestion = (lastChar == '?');
-        if ( lastChar == '.' || isQuestion || lastChar == '!')
+        if (lastChar == '.' || isQuestion || lastChar == '!')
         {
             sb.deleteCharAt(sb.length() - 1);
         }
@@ -201,7 +201,6 @@ public class VirtualAssistantView extends JFrame
     }
 
 
-
     private void processQuestion(final @NotNull String question)
     {
         // question is already lowercased and all punctuation is removed from it
@@ -210,13 +209,13 @@ public class VirtualAssistantView extends JFrame
         //
         switch (words[0])
         {
-            case "how" :
+            case "how":
                 howQuestion(words);
                 break;
-            case "who" :
+            case "who":
                 whoQuestion(words);
                 break;
-            case "where" :
+            case "where":
                 whereQuestion(words);
                 break;
             default:
@@ -229,7 +228,7 @@ public class VirtualAssistantView extends JFrame
     {
         // where <reference> (was | were) born
         //   0       1..N    wasWereIndex
-        if ( words.length < 4 )
+        if (words.length < 4)
         {
             unknownMessage(true);
             return;
@@ -237,35 +236,35 @@ public class VirtualAssistantView extends JFrame
         // Find the end of <reference>
         final int wasIndex = Arrays.asList(words).indexOf("was");
         final int wereIndex = Arrays.asList(words).indexOf("were");
-        final int wasWereIndex = ( wasIndex == -1 )? wereIndex : wasIndex;
-        if ( wasWereIndex == -1 )
+        final int wasWereIndex = (wasIndex == -1) ? wereIndex : wasIndex;
+        if (wasWereIndex == -1)
         {
             unknownMessage(true);
             return;
         }
         //
         final @Nullable List<Vertex> reference = parseReference(words, 1, wasWereIndex - 1);
-        if ( reference == null )
+        if (reference == null)
         {
             egoUnknown();
             return;
         }
-        if ( reference.isEmpty() )
+        if (reference.isEmpty())
         {
             emptyReference(words, 1, wasWereIndex);
             return;
         }
         //
-        for ( final Vertex person : reference )
+        for (final Vertex person : reference)
         {
             final @NotNull String birthplace = person.profile().getOccupation();
-            if ( birthplace.isEmpty() )
+            if (birthplace.isEmpty())
             {
                 continue;
             }
             final @NotNull String firstName = person.profile().getFirstName();
-            final @NotNull String lastName  = person.profile().getLastName();
-            final @NotNull String response  = String.format("%s %s was born in %s.", firstName, lastName, birthplace);
+            final @NotNull String lastName = person.profile().getLastName();
+            final @NotNull String response = String.format("%s %s was born in %s.", firstName, lastName, birthplace);
             echo(response);
         }
     }
@@ -303,39 +302,39 @@ public class VirtualAssistantView extends JFrame
         // At this point there is at least one word between "is" and "related"
         // And at least one word between "to" and "?"
         final @Nullable List<Vertex> firstRef = parseReference(words, 2, relatedIndex - 1);
-        final @Nullable List<Vertex> lastRef  = parseReference(words, relatedIndex + 2, words.length - 1);
+        final @Nullable List<Vertex> lastRef = parseReference(words, relatedIndex + 2, words.length - 1);
         // Null ref signifies that variable this.ego is null, so we will exit
-        if ( firstRef == null || lastRef == null )
+        if (firstRef == null || lastRef == null)
         {
             return;
         }
-        if ( firstRef.isEmpty() )
+        if (firstRef.isEmpty())
         {
             emptyReference(words, 2, relatedIndex);
             return;
         }
-        if ( lastRef.isEmpty() )
+        if (lastRef.isEmpty())
         {
             final @NotNull String ref = Arrays.asList(words).subList(relatedIndex + 1, words.length).stream()
-                                        .collect(Collectors.joining(" "));
+                    .collect(Collectors.joining(" "));
             echo("I found no one who would match: '" + ref + "'");
             return;
         }
         // Evaluate kinship relation between the first person from the list `firstRef` and all people in `lastRef`
         final @NotNull Vertex from = firstRef.get(0);
-        for ( Vertex to : lastRef )
+        for (Vertex to : lastRef)
         {
-            final @NotNull List<String> toKinFrom  = KinshipDictionary.instance.shorten( in.ontology().tree().kinship(to, from) );
-            final @NotNull String firstPersonName  = (from.equals(ego))? "You" : from.profile().getFirstName() + " " + from.profile().getLastName();
-            final @NotNull String secondPersonName = (to.equals(ego))? "you" : to.profile().getFirstName() + " " + to.profile().getLastName();
+            final @NotNull List<String> toKinFrom = KinshipDictionary.instance.shorten(in.ontology().tree().kinship(to, from));
+            final @NotNull String firstPersonName = (from.equals(ego)) ? "You" : from.profile().getFirstName() + " " + from.profile().getLastName();
+            final @NotNull String secondPersonName = (to.equals(ego)) ? "you" : to.profile().getFirstName() + " " + to.profile().getLastName();
             final @NotNull String message;
-            if ( toKinFrom.isEmpty() )
+            if (toKinFrom.isEmpty())
             {
                 message = String.format("%s and %s are not related.", firstPersonName, secondPersonName);
             }
             else
             {
-                final @NotNull String prefix = (from.equals(ego))? " are a " : " is a ";
+                final @NotNull String prefix = (from.equals(ego)) ? " are a " : " is a ";
                 message = toKinFrom.stream().collect(Collectors.joining(" of a ",
                         firstPersonName + prefix,
                         " of " + secondPersonName));
@@ -349,7 +348,7 @@ public class VirtualAssistantView extends JFrame
         // Who is <reference>?
         // Who are <reference>?
         // Who am I?
-        if ( words.length < 3 )
+        if (words.length < 3)
         {
             unknownMessage(true);
             return;
@@ -357,17 +356,17 @@ public class VirtualAssistantView extends JFrame
         // words has at least 3 elements
         final @NotNull String article = words[1];
         //
-        if ( !article.equals("am") && !article.equals("are") && !article.equals("is") )
+        if (!article.equals("am") && !article.equals("are") && !article.equals("is"))
         {
             unknownMessage(true);
         }
         //
         final @Nullable List<Vertex> reference = parseReference(words, 2, words.length - 1);
-        if ( reference == null )
+        if (reference == null)
         {
             return;
         }
-        if ( reference.isEmpty() )
+        if (reference.isEmpty())
         {
             emptyReference(words, 2, words.length);
             return;
@@ -384,13 +383,13 @@ public class VirtualAssistantView extends JFrame
         // (a | an) <relative> of <reference>
         final @Nullable List<Vertex> result;
         final @NotNull FamilyTree tree = in.ontology().tree();
-        switch( refWords[startInc] )
+        switch (refWords[startInc])
         {
-            case "myself" :
-            case "me" :
-            case "i" :
+            case "myself":
+            case "me":
+            case "i":
             {
-                if  ( ego != null )
+                if (ego != null)
                 {
                     // I, me and myself
                     result = new LinkedList<>();
@@ -403,31 +402,31 @@ public class VirtualAssistantView extends JFrame
                 }
                 break;
             }
-            case "my" :
+            case "my":
             {
-                if  ( ego == null )
+                if (ego == null)
                 {
                     result = null;
                     egoUnknown();
                     break;
                 }
                 final int nRelative = endInc - startInc;
-                if ( nRelative == 2 )
+                if (nRelative == 2)
                 {
                     // Extract the two kinship terms
                     //      first        result
                     // my <relative>s' <relative>
-                    final @NotNull StringBuilder sb = new StringBuilder( refWords[startInc + 1] );
+                    final @NotNull StringBuilder sb = new StringBuilder(refWords[startInc + 1]);
                     // Remove needless letters from the first term
                     // Remove single quote (')
                     int firstLen = sb.length();
-                    if ( sb.charAt(firstLen - 1) == '\'' )
+                    if (sb.charAt(firstLen - 1) == '\'')
                     {
                         sb.deleteCharAt(firstLen - 1);
                         firstLen--;
                     }
                     // Remove last letter 's'
-                    if ( sb.charAt(firstLen - 1) == 's' )
+                    if (sb.charAt(firstLen - 1) == 's')
                     {
                         sb.deleteCharAt(firstLen - 1);
                     }
@@ -440,10 +439,10 @@ public class VirtualAssistantView extends JFrame
                         // refWords[endInc] == last kinship term, as in
                         //      first        last
                         // my <relative>s' <relative>
-                        result.addAll( tree.findRelatives(v, refWords[endInc]) );
+                        result.addAll(tree.findRelatives(v, refWords[endInc]));
                     }
                 }
-                else if ( nRelative == 1 )
+                else if (nRelative == 1)
                 {
                     // my <relative>
                     result = tree.findRelatives(ego, refWords[startInc + 1]);
@@ -455,12 +454,12 @@ public class VirtualAssistantView extends JFrame
                 }
                 break;
             }
-            case "an" :
-            case "a" :
+            case "an":
+            case "a":
             {
                 // startInc (startInc + 1) (startInc + 2) (startInc + 3)
                 //     a       <relative>         of       <reference>
-                if ( endInc - startInc < 3 || !refWords[startInc + 2].equals("of") )
+                if (endInc - startInc < 3 || !refWords[startInc + 2].equals("of"))
                 {
                     result = new LinkedList<>();
                     unknownMessage(true);
@@ -469,7 +468,7 @@ public class VirtualAssistantView extends JFrame
                 final @NotNull String relativeWord = refWords[startInc + 1];
                 final @Nullable List<Vertex> egos = parseReference(refWords, startInc + 3, endInc);
                 // NOTE: О null указателе должен сообщать этот метод, а о пустом result -- тот метод, который нас вызывает.
-                if ( egos == null || egos.isEmpty() )
+                if (egos == null || egos.isEmpty())
                 {
                     // NOTE: Т.о., нам ничего не надо echo'ить потому, что о null мы уже сообщили, а о пустом result
                     // NOTE: сообщит вызывающий нас внешний метод.
@@ -478,9 +477,9 @@ public class VirtualAssistantView extends JFrame
                 }
                 //
                 result = new LinkedList<>();
-                for ( final Vertex ego : egos )
+                for (final Vertex ego : egos)
                 {
-                    result.addAll( tree.findRelatives(ego, relativeWord) );
+                    result.addAll(tree.findRelatives(ego, relativeWord));
                 }
                 break;
             }
@@ -495,27 +494,27 @@ public class VirtualAssistantView extends JFrame
                     longNameBuilder.append(refWords[i]);
                     longNameBuilder.append(" ");
                 }
-                final int  lastIndex = longNameBuilder.length() - 1;
-                final char lastChar = longNameBuilder.charAt( lastIndex );
-                if ( lastChar == ' ' )
+                final int lastIndex = longNameBuilder.length() - 1;
+                final char lastChar = longNameBuilder.charAt(lastIndex);
+                if (lastChar == ' ')
                 {
                     // Remove trailing space
-                    longNameBuilder.deleteCharAt( lastIndex );
+                    longNameBuilder.deleteCharAt(lastIndex);
                 }
                 final @NotNull String lastName = longNameBuilder.toString(); // NOTE: Long names are now supported!
                 // Search for a relative
                 result = new LinkedList<>();
                 final @Nullable Vertex foundRelative = tree.getVertex(firstName, lastName);
-                if ( foundRelative != null )
+                if (foundRelative != null)
                 {
-                    result.add( foundRelative );
+                    result.add(foundRelative);
                 }
                 //
                 break;
             }
         }
         // return only distinct elements
-        return (result == null)? null : result.stream().distinct().collect(Collectors.toList());
+        return (result == null) ? null : result.stream().distinct().collect(Collectors.toList());
     }
 
     private void emptyReference(final @NotNull String[] refWords, final int startInclusive, final int endExclusive)
@@ -533,7 +532,7 @@ public class VirtualAssistantView extends JFrame
 
     private void unknownMessage(final boolean isQuestion)
     {
-        if ( isQuestion )
+        if (isQuestion)
         {
             echo("I'm sorry, I cannot understand your question.");
             echo("Type `questions` to see what you can ask me about.");
@@ -546,24 +545,20 @@ public class VirtualAssistantView extends JFrame
     }
 
 
-
     private void processQuery(final String query)
     {
         echo("You typed a lisp query. Here is the result of its evaluation:");
         try
         {
-            echo( in.exec( query, false, true ).toString() );
-        }
-        catch (final InvalidTermException e1)
+            echo(in.exec(query, false, true).toString());
+        } catch (final InvalidTermException e1)
         {
             echo(e1.getMessage(), true);
-        }
-        catch (final IllegalInterpreterStateException e1)
+        } catch (final IllegalInterpreterStateException e1)
         {
             echo(e1.getMessage(), true);
             e1.printStackTrace();
-        }
-        catch (final InterpreterException e1)
+        } catch (final InterpreterException e1)
         {
             echo("Global: " + e1.getMessage(), true);
         }
@@ -579,7 +574,7 @@ public class VirtualAssistantView extends JFrame
         boolean isQuery = false;
         try
         {
-            if ( in.isPrimitive(query) )
+            if (in.isPrimitive(query))
             {
                 isQuery = true;
             }
@@ -588,15 +583,13 @@ public class VirtualAssistantView extends JFrame
                 final String clipped = in.clip(query);
                 isQuery = (clipped.charAt(0) == '(');
             }
-        }
-        catch (InvalidTermException e)
+        } catch (InvalidTermException e)
         {
             echo(e.getMessage());
         }
         //
         return isQuery;
     }
-
 
 
     private void processCommand(final @NotNull String command)
@@ -610,52 +603,52 @@ public class VirtualAssistantView extends JFrame
         final String firstWord = words[0].toLowerCase();
         switch (firstWord)
         {
-            case "i" :
-            case "i'm" :
+            case "i":
+            case "i'm":
                 final @NotNull String egoFirstName = words[1];
                 final @NotNull String egoLastName = words[2];
                 final @Nullable Vertex v = in.ontology().tree().getVertex(egoFirstName, egoLastName);
-                if ( v == null )
+                if (v == null)
                 {
-                    echo( String.format("I can't find %s %s in my knowledge base.", egoFirstName, egoLastName) );
+                    echo(String.format("I can't find %s %s in my knowledge base.", egoFirstName, egoLastName));
                 }
                 else
                 {
                     this.ego = v;
-                    echo( String.format("Nice to meet you, %s %s.", egoFirstName, egoLastName) );
+                    echo(String.format("Nice to meet you, %s %s.", egoFirstName, egoLastName));
                 }
                 break;
-            case "set" :
+            case "set":
                 setCommand(words);
                 break;
-            case "benchmark" :
+            case "benchmark":
                 final long millis = in.lastBenchmark() / 1000000;
                 echo(String.format("%d ms.", millis));
                 break;
-            case "flush" :
+            case "flush":
                 in.expungeCache();
                 echo("Table of cached evaluated terms has been cleaned.");
                 break;
-            case "load" :
+            case "load":
                 loadCommand(words);
                 break;
-            case "clear" :
+            case "clear":
                 outputArea.setText("");
                 break;
-            case "hide" :
+            case "hide":
                 genealogyView.requestFocus();
                 setVisible(false);
                 break;
-            case "show" :
+            case "show":
                 showCommand(words);
                 break;
-            case "print" :
+            case "print":
                 printCommand(words);
                 break;
-            case "help" :
+            case "help":
                 helpCommand(words);
                 break;
-            case "commands" :
+            case "commands":
                 echo("Here's the list of all available commands:");
                 echo("Everything inside squared brackets '[]' is optional");
                 echo("1. Show [me] <reference>.");
@@ -693,7 +686,7 @@ public class VirtualAssistantView extends JFrame
     private void setCommand(final @NotNull String[] words)
     {
         // words is ensured to be non-empty by the caller method "processCommand"
-        if ( words.length < 2 )
+        if (words.length < 2)
         {
             echo("'Set' command: no option was specified.");
             return;
@@ -701,17 +694,17 @@ public class VirtualAssistantView extends JFrame
         final @NotNull String option = words[1];
         switch (option)
         {
-            case "cache" :
-            case "caching" :
+            case "cache":
+            case "caching":
                 in.enableCaching();
                 echo("Term caching enabled.");
                 break;
-            case "nocache" :
-            case "nocaching" :
+            case "nocache":
+            case "nocaching":
                 in.disableCaching();
                 echo("Term caching disabled.");
                 break;
-            default :
+            default:
                 echo(String.format("'Set' command: unknown option '%s'", option));
                 break;
         }
@@ -732,8 +725,7 @@ public class VirtualAssistantView extends JFrame
                 {
                     in.exec(axioms, null);
                     echo("Successfully loaded.");
-                }
-                catch (final InterpreterException e)
+                } catch (final InterpreterException e)
                 {
                     echo(e.getMessage());
                 }
@@ -759,35 +751,35 @@ public class VirtualAssistantView extends JFrame
         // The index in `words` of the first words of a <reference> in this command:
         // 1. Show [me] <reference>.
         int refStartIndex = 1;
-        if ( words[1].equals("me") )
+        if (words[1].equals("me"))
         {
             refStartIndex++;
         }
         // Show [me] <reference>
         final @Nullable List<Vertex> relatives = parseReference(words, refStartIndex, wordCount - 1);
         //
-        if ( relatives == null )
+        if (relatives == null)
         {
             return;
         }
-        if ( relatives.isEmpty() )
+        if (relatives.isEmpty())
         {
             emptyReference(words, refStartIndex, wordCount);
             return;
         }
         //
         final @NotNull Vertex firstRelative = relatives.get(0);
-        echo( String.format("Centering on %s %s",
+        echo(String.format("Centering on %s %s",
                 firstRelative.profile().getFirstName(),
-                firstRelative.profile().getLastName()) );
-        genealogyView.centerOnPerson( firstRelative.profile() );
+                firstRelative.profile().getLastName()));
+        genealogyView.centerOnPerson(firstRelative.profile());
     }
 
     private void printCommand(final @NotNull String[] words)
     {
         // Print [me] [n] near events
         int refStartIndex = 1;
-        if ( words[1].equals("me") )
+        if (words[1].equals("me"))
         {
             refStartIndex++;
         }
@@ -797,7 +789,7 @@ public class VirtualAssistantView extends JFrame
         final int DEFAULT_PRINT_LIMIT = 10;
         final int printLimit;
         final @NotNull String forthcoming;
-        if ( ref.matches("\\d+") )
+        if (ref.matches("\\d+"))
         {
             printLimit = Integer.parseInt(ref);
             forthcoming = words[refStartIndex + 1];
@@ -808,7 +800,7 @@ public class VirtualAssistantView extends JFrame
             forthcoming = ref;
         }
         //
-        if ( !forthcoming.equals("forthcoming") && !forthcoming.equals("impending") && !forthcoming.equals("near") )
+        if (!forthcoming.equals("forthcoming") && !forthcoming.equals("impending") && !forthcoming.equals("near"))
         {
             unknownMessage(false);
             return;
@@ -817,21 +809,21 @@ public class VirtualAssistantView extends JFrame
         // Group all distinct forthcoming events by their date
         final @NotNull List<Occasion> events = new LinkedList<>();
         final @NotNull Map<Integer, Boolean> spouseSeen = new HashMap<>();
-        in.ontology().getPeople().forEach( person ->
+        in.ontology().getPeople().forEach(person ->
+        {
+            events.add(BirthdayOccasion.of(person));
+            final @Nullable MaritalBond marriage = in.ontology().getMaritalBond(person);
+            if (marriage != null)
+            {
+                final int id1 = marriage.getHead().getID();
+                final int id2 = marriage.getTail().getID();
+                if (!spouseSeen.containsKey(id1) && !spouseSeen.containsKey(id2))
                 {
-                    events.add( BirthdayOccasion.of(person) );
-                    final @Nullable MaritalBond marriage = in.ontology().getMaritalBond(person);
-                    if ( marriage != null )
-                    {
-                        final int id1 = marriage.getHead().getID();
-                        final int id2 = marriage.getTail().getID();
-                        if ( !spouseSeen.containsKey(id1) && !spouseSeen.containsKey(id2) )
-                        {
-                            events.add( AnniversaryOccasion.of(marriage) );
-                            spouseSeen.put(id1, true);
-                        }
-                    }
-                });
+                    events.add(AnniversaryOccasion.of(marriage));
+                    spouseSeen.put(id1, true);
+                }
+            }
+        });
         events.stream()
                 .filter(Occasion::isImpeding)
                 .sorted()
@@ -843,12 +835,12 @@ public class VirtualAssistantView extends JFrame
     @SuppressWarnings("unchecked")
     private void helpCommand(final @NotNull String[] words)
     {
-        if ( words.length == 2 )
+        if (words.length == 2)
         {
             //
             final @NotNull String funcName = words[1];
-            final @Nullable JSONObject doc = (JSONObject)lispDocJSON.get(funcName);
-            if ( doc == null )
+            final @Nullable JSONObject doc = (JSONObject) lispDocJSON.get(funcName);
+            if (doc == null)
             {
                 echo("There is no such lisp function: " + funcName);
                 return;
@@ -863,7 +855,7 @@ public class VirtualAssistantView extends JFrame
             echo("Arguments:");
             final @NotNull JSONObject args = (JSONObject) doc.get("Arguments");
             //noinspection unchecked
-            args.forEach( (key, value) -> echo("   " + key + " : " + value) );
+            args.forEach((key, value) -> echo("   " + key + " : " + value));
             // examples
             echo("Examples:");
             final @NotNull JSONArray examples = (JSONArray) doc.get("Examples");
@@ -886,6 +878,88 @@ public class VirtualAssistantView extends JFrame
         }
     }
 
+    {
+// GUI initializer generated by IntelliJ IDEA GUI Designer
+// >>> IMPORTANT!! <<<
+// DO NOT EDIT OR ADD ANY CODE HERE!
+        $$$setupUI$$$();
+    }
+
+    /**
+     * Method generated by IntelliJ IDEA GUI Designer
+     * >>> IMPORTANT!! <<<
+     * DO NOT edit this method OR call it in your code!
+     *
+     * @noinspection ALL
+     */
+    private void $$$setupUI$$$()
+    {
+        mainPanel = new JPanel();
+        mainPanel.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(2, 3, new Insets(0, 0, 0, 0), -1, -1));
+        inputField = new JTextField();
+        Font inputFieldFont = this.$$$getFont$$$(null, -1, 16, inputField.getFont());
+        if (inputFieldFont != null)
+        {
+            inputField.setFont(inputFieldFont);
+        }
+        mainPanel.add(inputField, new com.intellij.uiDesigner.core.GridConstraints(1, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        scrollPane = new JScrollPane();
+        mainPanel.add(scrollPane, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 3, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        outputArea = new JTextArea();
+        outputArea.setEditable(false);
+        outputArea.setEnabled(true);
+        Font outputAreaFont = this.$$$getFont$$$(null, -1, 16, outputArea.getFont());
+        if (outputAreaFont != null)
+        {
+            outputArea.setFont(outputAreaFont);
+        }
+        outputArea.setLineWrap(true);
+        outputArea.setWrapStyleWord(true);
+        scrollPane.setViewportView(outputArea);
+        sendButton = new JButton();
+        sendButton.setText("Send");
+        mainPanel.add(sendButton, new com.intellij.uiDesigner.core.GridConstraints(1, 2, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        youLabel = new JLabel();
+        youLabel.setText("  You:");
+        mainPanel.add(youLabel, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+    }
+
+    /**
+     * @noinspection ALL
+     */
+    private Font $$$getFont$$$(String fontName, int style, int size, Font currentFont)
+    {
+        if (currentFont == null)
+        {
+            return null;
+        }
+        String resultName;
+        if (fontName == null)
+        {
+            resultName = currentFont.getName();
+        }
+        else
+        {
+            Font testFont = new Font(fontName, Font.PLAIN, 10);
+            if (testFont.canDisplay('a') && testFont.canDisplay('1'))
+            {
+                resultName = fontName;
+            }
+            else
+            {
+                resultName = currentFont.getName();
+            }
+        }
+        return new Font(resultName, style >= 0 ? style : currentFont.getStyle(), size >= 0 ? size : currentFont.getSize());
+    }
+
+    /**
+     * @noinspection ALL
+     */
+    public JComponent $$$getRootComponent$$$()
+    {
+        return mainPanel;
+    }
 
 
     private static abstract class Occasion implements Comparable<Occasion>
@@ -905,7 +979,7 @@ public class VirtualAssistantView extends JFrame
         {
             final int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
             final int currentMonth = Calendar.getInstance().get(Calendar.MONTH);
-            if ( this.month == currentMonth )
+            if (this.month == currentMonth)
             {
                 return this.day >= currentDay;
             }
@@ -925,7 +999,7 @@ public class VirtualAssistantView extends JFrame
         @Override
         public int compareTo(final @NotNull VirtualAssistantView.Occasion o)
         {
-            if ( this.month == o.month )
+            if (this.month == o.month)
             {
                 return this.day - o.day;
             }
@@ -938,7 +1012,7 @@ public class VirtualAssistantView extends JFrame
         @Override
         public boolean equals(Object obj)
         {
-            if ( !(obj instanceof Occasion) )
+            if (!(obj instanceof Occasion))
             {
                 return false;
             }
@@ -966,7 +1040,7 @@ public class VirtualAssistantView extends JFrame
             final int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
             final int currentMonth = Calendar.getInstance().get(Calendar.MONTH);
             final @NotNull String dateStr;
-            if ( this.day == currentDay && this.month == currentMonth )
+            if (this.day == currentDay && this.month == currentMonth)
             {
                 dateStr = "TODAY";
             }
@@ -980,7 +1054,7 @@ public class VirtualAssistantView extends JFrame
         @Override
         public boolean equals(Object obj)
         {
-            if ( !(obj instanceof BirthdayOccasion) )
+            if (!(obj instanceof BirthdayOccasion))
             {
                 return false;
             }
@@ -994,7 +1068,7 @@ public class VirtualAssistantView extends JFrame
             final @NotNull Calendar birthDate = Person.stringToCalendar(p.getDateOfBirth());
             final int day = birthDate.get(Calendar.DAY_OF_MONTH);
             final int month = birthDate.get(Calendar.MONTH);
-            final int age = Calendar.getInstance().get(Calendar.YEAR)  - birthDate.get(Calendar.YEAR);
+            final int age = Calendar.getInstance().get(Calendar.YEAR) - birthDate.get(Calendar.YEAR);
             final @NotNull String name = p.getFirstName() + " " + p.getLastName();
             //
             return new BirthdayOccasion(id, day, month, name, age);
@@ -1023,7 +1097,7 @@ public class VirtualAssistantView extends JFrame
         @Override
         public boolean equals(final Object obj)
         {
-            if ( !(obj instanceof AnniversaryOccasion) )
+            if (!(obj instanceof AnniversaryOccasion))
             {
                 return false;
             }
@@ -1037,7 +1111,7 @@ public class VirtualAssistantView extends JFrame
             final int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
             final int currentMonth = Calendar.getInstance().get(Calendar.MONTH);
             final @NotNull String dateStr;
-            if ( this.day == currentDay && this.month == currentMonth )
+            if (this.day == currentDay && this.month == currentMonth)
             {
                 dateStr = "TODAY";
             }
@@ -1054,9 +1128,9 @@ public class VirtualAssistantView extends JFrame
 
         static @NotNull AnniversaryOccasion of(final @NotNull MaritalBond marriage)
         {
-            final int husbandID = (marriage.getHead().isMale())? marriage.getHead().getID() : marriage.getTail().getID();
-            final int wifeID    = (marriage.getHead().isMale())? marriage.getTail().getID() : marriage.getHead().getID();
-            final @NotNull Calendar weddingDate = Person.stringToCalendar( (marriage).getDateOfWedding() );
+            final int husbandID = (marriage.getHead().isMale()) ? marriage.getHead().getID() : marriage.getTail().getID();
+            final int wifeID = (marriage.getHead().isMale()) ? marriage.getTail().getID() : marriage.getHead().getID();
+            final @NotNull Calendar weddingDate = Person.stringToCalendar((marriage).getDateOfWedding());
             final int day = weddingDate.get(Calendar.DAY_OF_MONTH);
             final int month = weddingDate.get(Calendar.MONTH);
             final int anniversary = Calendar.getInstance().get(Calendar.YEAR) - weddingDate.get(Calendar.YEAR);
@@ -1068,7 +1142,6 @@ public class VirtualAssistantView extends JFrame
     }
 
 
-
     private class SendAction implements ActionListener
     {
         @Override
@@ -1077,7 +1150,6 @@ public class VirtualAssistantView extends JFrame
             respond(inputField.getText());
         }
     }
-
 
 
     private class InputFieldKeyListener implements KeyListener
@@ -1100,15 +1172,15 @@ public class VirtualAssistantView extends JFrame
             final char typedChar = e.getKeyChar();
             switch (typedChar)
             {
-                case '\r' :
-                    if ( e.isControlDown() )
+                case '\r':
+                    if (e.isControlDown())
                     {
                         respond(inputField.getText());
                         inputField.setText("");
                     }
                     break;
-                case '\u000B' :
-                    if ( e.isControlDown() )
+                case '\u000B':
+                    if (e.isControlDown())
                     {
                         inputField.setText(lastMessage);
                     }

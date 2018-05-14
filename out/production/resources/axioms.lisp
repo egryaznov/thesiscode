@@ -65,7 +65,7 @@
 
 (define twice (lambda (f) ( lambda (n) (f (f n)) )))
 
-(define factorial (lambda (n) (filtered-accumulate truth * id 1 inc n)))
+(define factorial (lambda (n) (if (= n 0) 1 (* n (factorial (dec n))))))
 
 (define empty? (lambda (lst) (= 0 (count lst))))
 

@@ -15,6 +15,7 @@ repositories
 
 dependencies
         {
+            compile 'com.intellij:forms_rt:7.0.3'
             compileClasspath 'org.junit.platform:junit-platform-gradle-plugin:1.2.0'
             compile 'org.jetbrains:annotations:16.0.1'
             compile name: 'sqlite-jdbc-3.21.0'

@@ -41,10 +41,9 @@ public class Database
     }
 
 
-    void createNewDatabase(final String title)
+    void createNewDatabase(final @NotNull String fullPathToGenealogyDir)
     {
-        final String databasePath = "res/genealogies/" + title + "/genealogy.kindb";
-        establishConnection(databasePath);
+        establishConnection(fullPathToGenealogyDir + "/genealogy.kindb");
         // Create DB schema
         try ( final @NotNull Statement stmt = connection.createStatement() )
         {
