@@ -22,8 +22,11 @@ Example:
 The REPL prompt will appear (`|-`) and you can start evaluating your KISP term, like that:
 
 `|- (+ 2 2)`
+
 `4`
+
 `|- (map inc (list 1 2 3 4))`
+
 `(list 2 3 4 5)`
 
 Also, there are REPL commands that can be used to change and gather information about current execution enviroment ($time, $cache, etc).
