@@ -1,0 +1,12 @@
+/doc
+/build
+/out
+/.gradle
+/.idea
+/lib
+/META-INF
+/reports
+.DS_Store
+Dockerfile
+*.iml
+
