@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="NumeralTypeTest" tests="20" skipped="0" failures="0" errors="0" timestamp="2018-05-07T19:36:26" hostname="MacBook-Air-Evgenij.local" time="0.326">
+<testsuite name="NumeralTypeTest" tests="20" skipped="0" failures="0" errors="0" timestamp="2018-06-12T09:28:53" hostname="MacBook-Air-Evgenij.local" time="0.217">
   <properties/>
-  <testcase name="subTest0()" classname="NumeralTypeTest" time="0.022"/>
-  <testcase name="subTest1()" classname="NumeralTypeTest" time="0.001"/>
-  <testcase name="subTest2()" classname="NumeralTypeTest" time="0.002"/>
-  <testcase name="subTest3()" classname="NumeralTypeTest" time="0.003"/>
-  <testcase name="addTest0()" classname="NumeralTypeTest" time="0.002"/>
+  <testcase name="subTest0()" classname="NumeralTypeTest" time="0.0"/>
+  <testcase name="subTest1()" classname="NumeralTypeTest" time="0.0"/>
+  <testcase name="subTest2()" classname="NumeralTypeTest" time="0.001"/>
+  <testcase name="subTest3()" classname="NumeralTypeTest" time="0.004"/>
+  <testcase name="addTest0()" classname="NumeralTypeTest" time="0.004"/>
   <testcase name="addTest1()" classname="NumeralTypeTest" time="0.001"/>
   <testcase name="addTest2()" classname="NumeralTypeTest" time="0.001"/>
-  <testcase name="addTest3()" classname="NumeralTypeTest" time="0.001"/>
-  <testcase name="modTest0()" classname="NumeralTypeTest" time="0.001"/>
-  <testcase name="modTest1()" classname="NumeralTypeTest" time="0.002"/>
+  <testcase name="addTest3()" classname="NumeralTypeTest" time="0.0"/>
+  <testcase name="modTest0()" classname="NumeralTypeTest" time="0.002"/>
+  <testcase name="modTest1()" classname="NumeralTypeTest" time="0.001"/>
   <testcase name="modTest2()" classname="NumeralTypeTest" time="0.001"/>
   <testcase name="divTest0()" classname="NumeralTypeTest" time="0.001"/>
-  <testcase name="divTest1()" classname="NumeralTypeTest" time="0.0"/>
-  <testcase name="divTest2()" classname="NumeralTypeTest" time="0.001"/>
+  <testcase name="divTest1()" classname="NumeralTypeTest" time="0.001"/>
+  <testcase name="divTest2()" classname="NumeralTypeTest" time="0.0"/>
   <testcase name="divTest3()" classname="NumeralTypeTest" time="0.001"/>
-  <testcase name="divTest4()" classname="NumeralTypeTest" time="0.002"/>
+  <testcase name="divTest4()" classname="NumeralTypeTest" time="0.001"/>
   <testcase name="mulTest0()" classname="NumeralTypeTest" time="0.001"/>
   <testcase name="mulTest1()" classname="NumeralTypeTest" time="0.0"/>
-  <testcase name="mulTest2()" classname="NumeralTypeTest" time="0.0"/>
-  <testcase name="mulTest3()" classname="NumeralTypeTest" time="0.0"/>
+  <testcase name="mulTest2()" classname="NumeralTypeTest" time="0.001"/>
+  <testcase name="mulTest3()" classname="NumeralTypeTest" time="0.001"/>
   <system-out><![CDATA[Connection to the database has been established
 ]]></system-out>
   <system-err><![CDATA[]]></system-err>

@@ -64,7 +64,7 @@ case "`uname`" in
     ;;
 esac
 
-CLASSPATH=$APP_HOME/lib/kindred.jar:$APP_HOME/lib/annotations-16.0.1.jar:$APP_HOME/lib/sqlite-jdbc-3.21.0.jar:$APP_HOME/lib/json-simple-1.1.1.jar:$APP_HOME/lib/jdatepicker-2.0.3.jar
+CLASSPATH=$APP_HOME/lib/kindred.jar:$APP_HOME/lib/forms_rt-7.0.3.jar:$APP_HOME/lib/annotations-16.0.1.jar:$APP_HOME/lib/sqlite-jdbc-3.21.0.jar:$APP_HOME/lib/json-simple-1.1.1.jar:$APP_HOME/lib/jdatepicker-2.0.3.jar:$APP_HOME/lib/asm-commons-3.0.jar:$APP_HOME/lib/forms-1.1-preview.jar:$APP_HOME/lib/jdom-1.0.jar:$APP_HOME/lib/asm-tree-3.0.jar:$APP_HOME/lib/asm-3.0.jar
 
 # Determine the Java command to use to start the JVM.
 if [ -n "$JAVA_HOME" ] ; then

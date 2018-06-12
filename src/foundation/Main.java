@@ -1,14 +1,10 @@
 package foundation;
 
 import foundation.lisp.Interpreter;
-import foundation.lisp.exceptions.IllegalInterpreterStateException;
 import foundation.lisp.exceptions.InterpreterException;
-import foundation.lisp.exceptions.InvalidTermException;
-import foundation.lisp.exceptions.NotEnoughKnowledge;
 import foundation.lisp.types.TObject;
-import foundation.main.Database;
 import foundation.main.MainFrame;
-import foundation.main.Ontology;
+import foundation.main.REPLKeywords;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,10 +16,15 @@ import java.util.Scanner;
 
 class Main
 {
-    private static final @NotNull String QUIT_KEYWORD           = "quit";
-    private static final @NotNull String TIME_KEYWORD           = "time";
-    private static final @NotNull String OPTION_KEY_GEN_FILE    = "g";
-    private static final @NotNull String OPTION_KEY_AXIOMS_FILE = "a";
+    private static final @NotNull String QUIT_KEYWORD            = "$quit";
+    private static final @NotNull String TIME_KEYWORD            = REPLKeywords.TIME_KEYWORD.getKeyword();
+    private static final @NotNull String EXPUNGE_CACHE_KEYWORD   = REPLKeywords.EXPUNGE_CACHE_KEYWORD.getKeyword();
+    private static final @NotNull String ENABLE_CACHING_KEYWORD  = REPLKeywords.ENABLE_CACHING_KEYWORD.getKeyword();
+    private static final @NotNull String DISABLE_CACHING_KEYWORD = REPLKeywords.DISABLE_CACHING_KEYWORD.getKeyword();
+    private static final @NotNull String CACHE_SIZE_KEYWORD      = REPLKeywords.CACHE_SIZE_KEYWORD.getKeyword();
+    private static final @NotNull String DEFINITIONS_KEYWORD     = REPLKeywords.DEFINITIONS_KEYWORD.getKeyword();
+    private static final @NotNull String OPTION_KEY_GEN_FILE     = "g";
+    private static final @NotNull String OPTION_KEY_AXIOMS_FILE  = "a";
 
 
 
@@ -57,6 +58,12 @@ class Main
                 definitionsToPreload = null;
             }
             // We've gathered all options, now let's run REPL
+            System.out.println("Please note that caching is DISABLED by default!");
+            System.out.println(String.format("To enable caching, type '%s'.", ENABLE_CACHING_KEYWORD));
+            System.out.println(String.format("To disable caching, type '%s'.", DISABLE_CACHING_KEYWORD));
+            System.out.println(String.format("To expunge term cache, type '%s'.", EXPUNGE_CACHE_KEYWORD));
+            System.out.println(String.format("Type '%s' to see the size of cache.", CACHE_SIZE_KEYWORD));
+            System.out.println(String.format("Type '%s' to see what functions was already defined.", DEFINITIONS_KEYWORD));
             System.out.println(String.format("Type '%s' to show the evaluation time of the last term.", TIME_KEYWORD));
             System.out.println(String.format("Type '%s' to exit.", QUIT_KEYWORD));
             launchREPL(genealogyTitle, definitionsToPreload);
@@ -66,6 +73,8 @@ class Main
             EventQueue.invokeLater(MainFrame::new);
         }
     }
+
+
 
     private static void launchREPL(final @NotNull String genealogyTitle, final @Nullable File axiomsFile)
     {
@@ -93,14 +102,14 @@ class Main
                 isQuitNotTyped = false;
                 continue;
             }
-            if ( curLine.equals(TIME_KEYWORD) )
+            // Check whether user types some REPL command, rather than a KISP term
+            final @Nullable REPLKeywords keyword = REPLKeywords.get(curLine);
+            if ( keyword != null )
             {
-                final double MILLION = 1000000L; // Six zeroes
-                final double millis = in.lastBenchmark() / MILLION;
-                System.out.println(String.format("Eval Time: %.4f s", millis));
+                keyword.act(in);
                 continue;
             }
-            //
+            // Evaluate current KISP term
             try
             {
                 final @NotNull TObject<?> evalResult = in.exec(curLine, true, true);
@@ -112,6 +121,8 @@ class Main
             }
         }
     }
+
+
 
     /**
      * Transforms an array of program arguments into a \(map : String \to String\).
@@ -148,36 +159,6 @@ class Main
         }
         //
         return result;
-    }
-
-    @SuppressWarnings("unused")
-    private static void m()
-    {
-        Database.instance.establishConnection( "res/genealogies/my/genealogy.kindb" );
-        final @NotNull Interpreter in = new Interpreter( new Ontology() );
-        System.out.println("\n------");
-        final String query = "(kinship (person 'Евгений' 'Грязнов') (person 'Олег' 'Федотов'))";
-        try
-        {
-            in.exec(new File("res/axioms.lisp"), null);
-            System.out.println( in.exec(query, false, true) );
-            // System.out.println( in.splitByTerms(in.rewrite(query), true, true) );
-            in.printLastBenchmark();
-            Database.instance.closeConnection();
-        }
-        catch (final InvalidTermException | NotEnoughKnowledge e)
-        {
-            System.out.println(e.getMessage());
-        }
-        catch (final IllegalInterpreterStateException e)
-        {
-            System.out.println(e.getMessage() + "\n");
-            e.printStackTrace();
-        }
-        catch (final InterpreterException e)
-        {
-            e.printStackTrace();
-        }
     }
 
 }

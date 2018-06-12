@@ -27,7 +27,7 @@ public class Lambda extends TFunction<TObject, TObject>
         super("$lambda" + nextID(), lambdaTerm);
         this.in = in;
         // XXX: Do we need rewriting here?
-        final @NotNull List<String> terms = in.splitByTerms(lambdaTerm, true, false, false);
+        final @NotNull List<String> terms = in.splitByTerms(lambdaTerm, true, false);
         if (terms.size() == 3)
         {
             final String paramsTerm = terms.get(1);

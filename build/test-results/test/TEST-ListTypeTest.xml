@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="ListTypeTest" tests="32" skipped="0" failures="0" errors="0" timestamp="2018-05-07T19:36:27" hostname="MacBook-Air-Evgenij.local" time="0.263">
+<testsuite name="ListTypeTest" tests="32" skipped="0" failures="0" errors="0" timestamp="2018-06-12T09:28:54" hostname="MacBook-Air-Evgenij.local" time="0.337">
   <properties/>
   <testcase name="appendTest0()" classname="ListTypeTest" time="0.001"/>
-  <testcase name="appendTest1()" classname="ListTypeTest" time="0.0"/>
-  <testcase name="appendTest2()" classname="ListTypeTest" time="0.0"/>
-  <testcase name="atTest()" classname="ListTypeTest" time="0.001"/>
+  <testcase name="appendTest1()" classname="ListTypeTest" time="0.001"/>
+  <testcase name="appendTest2()" classname="ListTypeTest" time="0.001"/>
+  <testcase name="atTest()" classname="ListTypeTest" time="0.002"/>
   <testcase name="joinTest()" classname="ListTypeTest" time="0.002"/>
   <testcase name="listTest1()" classname="ListTypeTest" time="0.002"/>
   <testcase name="headTest()" classname="ListTypeTest" time="0.001"/>
   <testcase name="countTest0()" classname="ListTypeTest" time="0.0"/>
   <testcase name="countTest1()" classname="ListTypeTest" time="0.001"/>
-  <testcase name="countTest2()" classname="ListTypeTest" time="0.0"/>
+  <testcase name="countTest2()" classname="ListTypeTest" time="0.001"/>
   <testcase name="filterTest0()" classname="ListTypeTest" time="0.003"/>
-  <testcase name="filterTest1()" classname="ListTypeTest" time="0.001"/>
-  <testcase name="filterTest2()" classname="ListTypeTest" time="0.016"/>
+  <testcase name="filterTest1()" classname="ListTypeTest" time="0.002"/>
+  <testcase name="filterTest2()" classname="ListTypeTest" time="0.013"/>
   <testcase name="atTest1()" classname="ListTypeTest" time="0.001"/>
   <testcase name="atTest2()" classname="ListTypeTest" time="0.001"/>
-  <testcase name="atTest3()" classname="ListTypeTest" time="0.0"/>
+  <testcase name="atTest3()" classname="ListTypeTest" time="0.001"/>
   <testcase name="atTest4()" classname="ListTypeTest" time="0.001"/>
   <testcase name="tailTest()" classname="ListTypeTest" time="0.001"/>
-  <testcase name="joinTest1()" classname="ListTypeTest" time="0.0"/>
+  <testcase name="joinTest1()" classname="ListTypeTest" time="0.012"/>
   <testcase name="joinTest2()" classname="ListTypeTest" time="0.001"/>
-  <testcase name="joinTest3()" classname="ListTypeTest" time="0.001"/>
-  <testcase name="joinTest4()" classname="ListTypeTest" time="0.013"/>
-  <testcase name="joinTest5()" classname="ListTypeTest" time="0.0"/>
-  <testcase name="joinTest6()" classname="ListTypeTest" time="0.0"/>
+  <testcase name="joinTest3()" classname="ListTypeTest" time="0.013"/>
+  <testcase name="joinTest4()" classname="ListTypeTest" time="0.033"/>
+  <testcase name="joinTest5()" classname="ListTypeTest" time="0.002"/>
+  <testcase name="joinTest6()" classname="ListTypeTest" time="0.001"/>
   <testcase name="listLambdaTest()" classname="ListTypeTest" time="0.001"/>
-  <testcase name="headTest1()" classname="ListTypeTest" time="0.001"/>
-  <testcase name="mapTest0()" classname="ListTypeTest" time="0.001"/>
+  <testcase name="headTest1()" classname="ListTypeTest" time="0.0"/>
+  <testcase name="mapTest0()" classname="ListTypeTest" time="0.002"/>
   <testcase name="mapTest1()" classname="ListTypeTest" time="0.003"/>
   <testcase name="mapTest2()" classname="ListTypeTest" time="0.001"/>
   <testcase name="mapTest3()" classname="ListTypeTest" time="0.001"/>

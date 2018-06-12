@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="StringTypeTest" tests="17" skipped="0" failures="0" errors="0" timestamp="2018-05-07T19:36:27" hostname="MacBook-Air-Evgenij.local" time="0.084">
+<testsuite name="StringTypeTest" tests="17" skipped="0" failures="0" errors="0" timestamp="2018-06-12T09:28:55" hostname="MacBook-Air-Evgenij.local" time="0.269">
   <properties/>
-  <testcase name="stringTest0()" classname="StringTypeTest" time="0.001"/>
-  <testcase name="stringTest1()" classname="StringTypeTest" time="0.0"/>
-  <testcase name="stringTest2()" classname="StringTypeTest" time="0.001"/>
+  <testcase name="stringTest0()" classname="StringTypeTest" time="0.013"/>
+  <testcase name="stringTest1()" classname="StringTypeTest" time="0.014"/>
+  <testcase name="stringTest2()" classname="StringTypeTest" time="0.0"/>
   <testcase name="stringTest3()" classname="StringTypeTest" time="0.001"/>
-  <testcase name="substrTest0()" classname="StringTypeTest" time="0.0"/>
-  <testcase name="substrTest1()" classname="StringTypeTest" time="0.0"/>
+  <testcase name="substrTest0()" classname="StringTypeTest" time="0.001"/>
+  <testcase name="substrTest1()" classname="StringTypeTest" time="0.002"/>
   <testcase name="substrTest2()" classname="StringTypeTest" time="0.001"/>
-  <testcase name="substrTest3()" classname="StringTypeTest" time="0.002"/>
-  <testcase name="substrTest4()" classname="StringTypeTest" time="0.0"/>
-  <testcase name="substrTest5()" classname="StringTypeTest" time="0.001"/>
-  <testcase name="substrTest6()" classname="StringTypeTest" time="0.0"/>
+  <testcase name="substrTest3()" classname="StringTypeTest" time="0.027"/>
+  <testcase name="substrTest4()" classname="StringTypeTest" time="0.001"/>
+  <testcase name="substrTest5()" classname="StringTypeTest" time="0.0"/>
+  <testcase name="substrTest6()" classname="StringTypeTest" time="0.001"/>
   <testcase name="concatTest0()" classname="StringTypeTest" time="0.001"/>
-  <testcase name="concatTest1()" classname="StringTypeTest" time="0.0"/>
-  <testcase name="concatTest2()" classname="StringTypeTest" time="0.001"/>
-  <testcase name="charsTest0()" classname="StringTypeTest" time="0.0"/>
-  <testcase name="charsTest1()" classname="StringTypeTest" time="0.0"/>
-  <testcase name="charsTest2()" classname="StringTypeTest" time="0.001"/>
+  <testcase name="concatTest1()" classname="StringTypeTest" time="0.001"/>
+  <testcase name="concatTest2()" classname="StringTypeTest" time="0.0"/>
+  <testcase name="charsTest0()" classname="StringTypeTest" time="0.001"/>
+  <testcase name="charsTest1()" classname="StringTypeTest" time="0.001"/>
+  <testcase name="charsTest2()" classname="StringTypeTest" time="0.0"/>
   <system-out><![CDATA[Connection to the database has been established
 ]]></system-out>
   <system-err><![CDATA[]]></system-err>

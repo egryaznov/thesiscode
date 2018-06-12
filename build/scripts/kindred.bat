@@ -63,7 +63,7 @@ set CMD_LINE_ARGS=%*
 :execute
 @rem Setup the command line
 
-set CLASSPATH=%APP_HOME%\lib\kindred.jar;%APP_HOME%\lib\annotations-16.0.1.jar;%APP_HOME%\lib\sqlite-jdbc-3.21.0.jar;%APP_HOME%\lib\json-simple-1.1.1.jar;%APP_HOME%\lib\jdatepicker-2.0.3.jar
+set CLASSPATH=%APP_HOME%\lib\kindred.jar;%APP_HOME%\lib\forms_rt-7.0.3.jar;%APP_HOME%\lib\annotations-16.0.1.jar;%APP_HOME%\lib\sqlite-jdbc-3.21.0.jar;%APP_HOME%\lib\json-simple-1.1.1.jar;%APP_HOME%\lib\jdatepicker-2.0.3.jar;%APP_HOME%\lib\asm-commons-3.0.jar;%APP_HOME%\lib\forms-1.1-preview.jar;%APP_HOME%\lib\jdom-1.0.jar;%APP_HOME%\lib\asm-tree-3.0.jar;%APP_HOME%\lib\asm-3.0.jar
 
 @rem Execute kindred
 "%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %KINDRED_OPTS%  -classpath "%CLASSPATH%" foundation.Main %CMD_LINE_ARGS%

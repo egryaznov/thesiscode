@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="ObjectTypeTest" tests="21" skipped="0" failures="1" errors="0" timestamp="2018-05-07T19:36:27" hostname="MacBook-Air-Evgenij.local" time="0.118">
+<testsuite name="ObjectTypeTest" tests="21" skipped="0" failures="1" errors="0" timestamp="2018-06-12T09:28:53" hostname="MacBook-Air-Evgenij.local" time="0.397">
   <properties/>
-  <testcase name="ofTypeTest10()" classname="ObjectTypeTest" time="0.0"/>
-  <testcase name="equalsTest0()" classname="ObjectTypeTest" time="0.001"/>
-  <testcase name="equalsTest1()" classname="ObjectTypeTest" time="0.001"/>
+  <testcase name="ofTypeTest10()" classname="ObjectTypeTest" time="0.026"/>
+  <testcase name="equalsTest0()" classname="ObjectTypeTest" time="0.002"/>
+  <testcase name="equalsTest1()" classname="ObjectTypeTest" time="0.002"/>
   <testcase name="equalsTest2()" classname="ObjectTypeTest" time="0.002"/>
-  <testcase name="equalsTest3()" classname="ObjectTypeTest" time="0.0"/>
-  <testcase name="equalsTest4()" classname="ObjectTypeTest" time="0.0"/>
-  <testcase name="equalsTest5()" classname="ObjectTypeTest" time="0.0"/>
-  <testcase name="equalsTest6()" classname="ObjectTypeTest" time="0.001"/>
-  <testcase name="equalsTest7()" classname="ObjectTypeTest" time="0.0"/>
-  <testcase name="equalsTest8()" classname="ObjectTypeTest" time="0.0"/>
-  <testcase name="equalsTest9()" classname="ObjectTypeTest" time="0.001"/>
-  <testcase name="ofTypeTest0()" classname="ObjectTypeTest" time="0.004">
+  <testcase name="equalsTest3()" classname="ObjectTypeTest" time="0.001"/>
+  <testcase name="equalsTest4()" classname="ObjectTypeTest" time="0.003"/>
+  <testcase name="equalsTest5()" classname="ObjectTypeTest" time="0.002"/>
+  <testcase name="equalsTest6()" classname="ObjectTypeTest" time="0.002"/>
+  <testcase name="equalsTest7()" classname="ObjectTypeTest" time="0.001"/>
+  <testcase name="equalsTest8()" classname="ObjectTypeTest" time="0.002"/>
+  <testcase name="equalsTest9()" classname="ObjectTypeTest" time="0.002"/>
+  <testcase name="ofTypeTest0()" classname="ObjectTypeTest" time="0.006">
     <failure message="java.lang.AssertionError: Assert: OfType.call, patient.value is null" type="java.lang.AssertionError">java.lang.AssertionError: Assert: OfType.call, patient.value is null
 	at foundation.lisp.types.TObject$OfType.call(TObject.java:145)
 	at foundation.lisp.types.TObject$OfType.call(TObject.java:124)
@@ -104,12 +104,12 @@
 </failure>
   </testcase>
   <testcase name="ofTypeTest1()" classname="ObjectTypeTest" time="0.001"/>
-  <testcase name="ofTypeTest2()" classname="ObjectTypeTest" time="0.0"/>
-  <testcase name="ofTypeTest3()" classname="ObjectTypeTest" time="0.0"/>
-  <testcase name="ofTypeTest4()" classname="ObjectTypeTest" time="0.0"/>
+  <testcase name="ofTypeTest2()" classname="ObjectTypeTest" time="0.001"/>
+  <testcase name="ofTypeTest3()" classname="ObjectTypeTest" time="0.001"/>
+  <testcase name="ofTypeTest4()" classname="ObjectTypeTest" time="0.001"/>
   <testcase name="ofTypeTest5()" classname="ObjectTypeTest" time="0.0"/>
-  <testcase name="ofTypeTest6()" classname="ObjectTypeTest" time="0.0"/>
-  <testcase name="ofTypeTest7()" classname="ObjectTypeTest" time="0.0"/>
+  <testcase name="ofTypeTest6()" classname="ObjectTypeTest" time="0.001"/>
+  <testcase name="ofTypeTest7()" classname="ObjectTypeTest" time="0.002"/>
   <testcase name="ofTypeTest8()" classname="ObjectTypeTest" time="0.0"/>
   <testcase name="ofTypeTest9()" classname="ObjectTypeTest" time="0.001"/>
   <system-out><![CDATA[Connection to the database has been established

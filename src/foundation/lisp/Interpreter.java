@@ -38,8 +38,10 @@ public class Interpreter
     private final static String IF_KEYWORD     = "if";
     private final @NotNull Ontology ontology;
     private long lastBenchmark;
-    private boolean isCachingEnabled = true;
-
+    /*
+        Disable term caching by default
+     */
+    private boolean isCachingEnabled = false;
     private final @NotNull Map<String, Boolean> keywords = new HashMap<>();
     /*
         Map of all atomic atomicFunctions like +, * etc. and anonymous lambdas
@@ -53,6 +55,8 @@ public class Interpreter
         Stores the result of previously evaluated subterms to speed up computation of the main term.
      */
     private final @NotNull Map<String, TObject> cachedTerms = new HashMap<>();
+
+
 
     public Interpreter(final @NotNull Ontology ontology)
     {
@@ -72,6 +76,15 @@ public class Interpreter
     }
 
 
+    public int cacheSize()
+    {
+        return cachedTerms.size();
+    }
+
+    public @NotNull String[] definitions()
+    {
+        return this.definitions.keySet().toArray(new String[]{""});
+    }
 
     public void enableCaching()
     {
@@ -148,7 +161,7 @@ public class Interpreter
             // Split the giant concatenated term and execute each axiom
             // XXX: Do we need rewriting here?
             // XXX: Apparently no, since everything works fine without it
-            final @NotNull List<String> axioms = splitByTerms(terms + ")", false, false, false);
+            final @NotNull List<String> axioms = splitByTerms(terms + ")", false, false);
             for (final String term : axioms)
             {
                 final @NotNull TObject<?> evaluatedTerm = exec(term);
@@ -290,7 +303,6 @@ public class Interpreter
         return result;
     }
 
-    @SuppressWarnings("unused")
     public long lastBenchmark()
     {
         return lastBenchmark;
@@ -411,19 +423,13 @@ public class Interpreter
         Splits a query into a list of its' terms.
         For example, splitByTerms("(+ (+ 1 2) 3 (+ 4 (+ 5 6)) 'a bc')") = ["+", "(+ 1 2)", "3", "(+ 4 (+ 5 6))", "'a bc'"]
      */
-    public @NotNull List<String> splitByTerms(final String query, final boolean isClipped, final boolean needRewriting,
-                                              final boolean benchmark)
+    public @NotNull List<String> splitByTerms(final String query, final boolean isClipped, final boolean needRewriting)
     {
-        final long time = System.nanoTime();
         final @NotNull String clippedTerm   = (isClipped)? query : clip(query);
         final @NotNull String rewrittenTerm = (needRewriting)? rewrite(clippedTerm, definitions) : clippedTerm;
         final List<String> result = splitByTerms( rewrittenTerm ).stream()
                 .map(term -> term.replaceAll("_", " "))
                 .collect(Collectors.toList());
-        if (benchmark)
-        {
-            lastBenchmark = System.nanoTime() - time;
-        }
         return result;
     }
 

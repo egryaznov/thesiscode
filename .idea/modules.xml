@@ -3,6 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/kindred.iml" filepath="$PROJECT_DIR$/kindred.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/kindred_main.iml" filepath="$PROJECT_DIR$/.idea/modules/kindred_main.iml" group="kindred" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/kindred_test.iml" filepath="$PROJECT_DIR$/.idea/modules/kindred_test.iml" group="kindred" />
     </modules>
   </component>
 </project>
