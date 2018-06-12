@@ -1,22 +1,0 @@
-
-Bsquid:S3398"(Move this method into "KinshipFunction".(ûÕù×ùÿÿÿÿ
-Gsquid:S1199"-Extract this nested code block into a method.(ÒÌâ–øÿÿÿÿ
-?squid:S3398"*Move this method into "GetPersonFunction".(ÉÑæÆ
-Gsquid:S1199"-Extract this nested code block into a method.(ÒÌâ–øÿÿÿÿ
-Gsquid:S1199"-Extract this nested code block into a method.(ÒÌâ–øÿÿÿÿ
-Gsquid:S1199"-Extract this nested code block into a method.(ÒÌâ–øÿÿÿÿ
-9squid:S3398"Move this method into "Mother".(éÉ ğúÿÿÿÿ
-Dsquid:S3398"*Move this method into "GetPersonFunction".(£Æãøÿÿÿÿ
-4squid:S3398"Move this method into "Father".(ö¤‰×
-Gsquid:S1199"-Extract this nested code block into a method.(ÒÌâ–øÿÿÿÿ
-Gsquid:S1199"-Extract this nested code block into a method.(ÒÌâ–øÿÿÿÿ
-Bsquid:S3398"-Move this method into "GetAttributeFunction".(á€¨Ï
-Gsquid:S1199"-Extract this nested code block into a method.(ÒÌâ–øÿÿÿÿ
-Gsquid:S1199"-Extract this nested code block into a method.(ÒÌâ–øÿÿÿÿ
-6squid:S3398"!Move this method into "Children".(“ÊÃ
-Gsquid:S1199"-Extract this nested code block into a method.(ÒÌâ–øÿÿÿÿ
-Gsquid:S1199"-Extract this nested code block into a method.(ÒÌâ–øÿÿÿÿ
-hsquid:ModifiersOrderCheck"EReorder the modifiers to comply with the Java Language Specification.(»– «
-Gsquid:S1199"-Extract this nested code block into a method.(ÒÌâ–øÿÿÿÿ
-Asquid:S3398",Move this method into "GenDistanceFunction".(Ó¡Õ…
-9squid:S3398"Move this method into "Spouse".(ç†»Åıÿÿÿÿ
